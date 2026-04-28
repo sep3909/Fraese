@@ -1,5 +1,5 @@
 /* USER CODE BEGIN Header */
-/**
+/** Nico
   ******************************************************************************
   * @file           : main.c
   * @brief          : Main program body
