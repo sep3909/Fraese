@@ -94,10 +94,11 @@ uint8_t UserRxBufferFS[APP_RX_DATA_SIZE];
 uint8_t UserTxBufferFS[APP_TX_DATA_SIZE];
 
 /* USER CODE BEGIN PRIVATE_VARIABLES */
-	  extern uint8_t  UserRxBuffer[64];
+	  extern uint8_t  UserRxBuffer[128];
   	extern uint8_t DataReady;
-  	  char temp_buffer[64];
-  	  uint8_t temp_index =0;
+    extern uint8_t event;  //! eigene Event-Variable
+  	char temp_buffer[128];
+  	uint8_t temp_index =0;
 /* USER CODE END PRIVATE_VARIABLES */
 
 /**
