@@ -10,7 +10,7 @@
 //#include "stepper.h"
 //#include "motion.h"
 
-#define MAX_SHAPES 100
+#define MAX_SHAPES 500
 
 //* STATE_MACHINE Daten empfangen
 typedef enum{
@@ -88,7 +88,9 @@ uint8_t line_index = 0;     //position in string
 //* Timer Interrupt Aufruf alle 200ms
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
     if (htim->Instance == TIM3){
-        if (current_data_state == MILLING){                         //* nur wenn gerade gefräst wird, werden Daten gesendet
+        if (current_data_state == MILLING){   
+            pos_x = pos_x + 0.5; 
+            pos_y = pos_y + 0.5;                      //* nur wenn gerade gefräst wird, werden Daten gesendet
             send_position(pos_x, pos_y, pos_z);
         }         
     }
@@ -156,7 +158,9 @@ void read_data(uint8_t* buf, uint32_t len){
                 //! Not-Stopp immer aktiv
                 if (strcmp(temp_buffer, "e3") == 0){
                     //Stepper_StopAll();
-                    event = 3;                    //? temporär
+                    send_ack();
+                    event = 3;
+                    current_data_state = CONFIG;                    
                     //send_test(event);          //? temporär
                 }
 
@@ -268,17 +272,18 @@ void read_data(uint8_t* buf, uint32_t len){
                 }
                 else if (current_data_state == READY){             //§ Ready Modus
                     if (strcmp(temp_buffer, "e6") == 0){ 
-                        current_data_state == MILLING;       
+                        current_data_state = MILLING;
+                        send_ack();       
                         //todo motor start
-                        send_ack();
                     }
                     else {
                         send_nack();
                     }
                 }
                 else if (current_data_state == MILLING){            //§ Milling Modus
-                    if (strcmp(temp_buffer, "e4")){
-                        current_data_state == READY;
+                    if (strcmp(temp_buffer, "e4") == 0){
+                        current_data_state = READY;
+                        send_ack();
                         //todo motor stop
                     }
                     else{
