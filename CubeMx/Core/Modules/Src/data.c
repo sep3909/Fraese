@@ -7,6 +7,8 @@
 #include <string.h>
 #include "data.h"
 #include "stdbool.h"
+#include "stepper.h"
+#include "motion.h"
 
 #define MAX_SHAPES 100
 
@@ -153,7 +155,7 @@ void read_data(uint8_t* buf, uint32_t len){
 
                 //! Not-Stopp immer aktiv
                 if (strcmp(temp_buffer, "e3") == 0){
-                    //todo emercency_stop();
+                    Stepper_StopAll();
                     event = 3;                    //? temporär
                     send_test(event);          //? temporär
                 }
