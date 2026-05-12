@@ -32,13 +32,6 @@
 
 #define MAX_SHAPES 500
 
-//* STATE_MACHINE Daten empfangen
-typedef enum{
-    CONFIG,
-    TRANSFER,
-    MILLING,
-    READY,
-}DataState_t;
 
 //* Formen
 typedef enum{
