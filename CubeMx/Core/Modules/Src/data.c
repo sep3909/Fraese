@@ -1,4 +1,6 @@
 #include "main.h"
+#include "stm32f407xx.h"
+#include "stm32f4xx_hal_gpio.h"
 #include "stm32f4xx_hal_tim.h"
 #include "usb_device.h"
 #include "usbd_cdc_if.h"
@@ -7,9 +9,9 @@
 #include <string.h>
 #include "data.h"
 #include "stdbool.h"
-//#include "stepper.h"
-//#include "motion.h"
-//kommentar
+#include "stepper.h"
+#include "motion.h"
+
 Shape_t milling_queue[MAX_SHAPES];          //* Array in dem die Fräsdaten gespeichert werden
 uint16_t shape_index = 0;                   //* Wie viele Formen aktuell
 
@@ -92,7 +94,7 @@ void read_data(uint8_t* buf, uint32_t len){
 
                 //! Not-Stopp immer aktiv
                 if (strcmp(temp_buffer, "e3") == 0){
-                    //Stepper_StopAll();
+                    Stepper_StopAll();
                     send_ack();
                     event = 3;
                     current_data_state = CONFIG;                    
@@ -220,6 +222,8 @@ void read_data(uint8_t* buf, uint32_t len){
                         current_data_state = READY;
                         send_ack();
                         //todo motor stop
+                        HAL_GPIO_WritePin(GPIOD, GPIO_PIN_12, 0);
+                        HAL_GPIO_WritePin(GPIOD, GPIO_PIN_15, 0);
                     }
                     else{
                         send_nack();

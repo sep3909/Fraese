@@ -21,6 +21,9 @@
 #include "i2c.h"
 #include "i2s.h"
 #include "spi.h"
+#include "stm32f407xx.h"
+#include "stm32f4xx_hal.h"
+#include "stm32f4xx_hal_gpio.h"
 #include "tim.h"
 #include "usb_device.h"
 #include "gpio.h"
@@ -138,6 +141,8 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
     //* Timer für Linearmotoren  /////////////////////////////////////////////////////////////////////////////
      // Stepper läuft über Timer-Interrupt.
     if (htim->Instance == TIM2) {
+      if (current_data_state == MILLING){
+      }
       Stepper_Update();
     }
 
