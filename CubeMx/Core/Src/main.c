@@ -21,6 +21,7 @@
 #include "i2c.h"
 #include "i2s.h"
 #include "spi.h"
+#include "stm32f4xx_hal_gpio.h"
 #include "tim.h"
 #include "usb_device.h"
 #include "gpio.h"
@@ -28,7 +29,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "usbd_cdc_if.h"
-#include "SpindleMotor.h"
+#include "stateMachine.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -78,7 +79,7 @@ int main(void)
   /* MCU Configuration--------------------------------------------------------*/
 
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
-  HAL_Init();
+HAL_Init();
 
   /* USER CODE BEGIN Init */
 
@@ -88,7 +89,6 @@ int main(void)
   SystemClock_Config();
 
   /* USER CODE BEGIN SysInit */
-  spindleMotorInit();
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
@@ -99,6 +99,7 @@ int main(void)
   MX_USB_DEVICE_Init();
   MX_TIM9_Init();
   /* USER CODE BEGIN 2 */
+  millingMachineInit(); //init of state machine, initialisiert auch motoren, Kommunikation
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -109,40 +110,52 @@ int main(void)
 
     /* USER CODE BEGIN 3 */
     //* Blinky
-    HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_15);
-        HAL_Delay(200);
+    
 
-    //* Begin codebe beispiel für Komunikation
-        if (DataReady == 1) 
-    {
-        // 1. Flag sofort zurücksetzen!
-        DataReady = 0;
+    //* Begin codebsp beispiel für Komunikation
+    //     if (DataReady == 1) 
+    // {
+    //     // 1. Flag sofort zurücksetzen!
+    //     DataReady = 0;
 
-        // 2. Logik: Was soll passieren?
-        if (strcmp((char*)UserRxBuffer, "PING") == 0) 
-        {
-            // Beispiel: LED umschalten
-            HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_12); 
+    //     // 2. Logik: Was soll passieren?
+    //     if (strcmp((char*)UserRxBuffer, "PING") == 0) 
+    //     {
+    //         // Beispiel: LED umschalten
+    //         HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_12); 
 
-            // Antwort an Python schicken
-            char *reply = "Du kleine Hure\n";
-            CDC_Transmit_FS((uint8_t*)reply, strlen(reply));
-        }
-        else 
-        {
-            // Ein Echo schicken für alles andere
-            char echo[80];
-            sprintf(echo, "Ich habe erhalten: %s\n", UserRxBuffer);
-            CDC_Transmit_FS((uint8_t*)echo, strlen(echo));
-        }
-    }
+    //         // Antwort an Python schicken
+    //         char *reply = "Du kleine Hure\n";
+    //         CDC_Transmit_FS((uint8_t*)reply, strlen(reply));
+    //     }
+    //     else 
+    //     {
+    //         // Ein Echo schicken für alles andere
+    //         char echo[80];
+    //         sprintf(echo, "Ich habe erhalten: %s\n", UserRxBuffer);
+    //         CDC_Transmit_FS((uint8_t*)echo, strlen(echo));
+    //     }
+    // }
     //* Ende Kommunikation
+    //* Test for h bridge
+    H_Bridge_set_DutyCycle(99); // Setze Duty Cycle auf 50%
+    spindleMotorSetDirection(1); // Setze Drehrichtung auf rüpckwärts
+    spindleMotorStart(); // Starte den Motor
+
+    if (HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_0) == GPIO_PIN_SET) {
+            spindleMotorStop();
+            HAL_GPIO_WritePin(GPIOD, GPIO_PIN_15, GPIO_PIN_RESET);
+    }
+    else
+    {
+      HAL_GPIO_WritePin(GPIOD, GPIO_PIN_15, GPIO_PIN_SET);
+    }
 
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-  }
   /* USER CODE END 3 */
+}
 }
 
 /**

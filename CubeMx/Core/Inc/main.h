@@ -63,6 +63,9 @@ void Error_Handler(void);
 #define H_Bridge_DIR_GPIO_Port GPIOE
 #define H_Bridge_PWM_Pin GPIO_PIN_5
 #define H_Bridge_PWM_GPIO_Port GPIOE
+#define endStopSwitch_Pin GPIO_PIN_6
+#define endStopSwitch_GPIO_Port GPIOE
+#define endStopSwitch_EXTI_IRQn EXTI9_5_IRQn
 #define PC14_OSC32_IN_Pin GPIO_PIN_14
 #define PC14_OSC32_IN_GPIO_Port GPIOC
 #define PC15_OSC32_OUT_Pin GPIO_PIN_15
