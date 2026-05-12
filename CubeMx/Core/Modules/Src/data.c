@@ -7,8 +7,8 @@
 #include <string.h>
 #include "data.h"
 #include "stdbool.h"
-#include "stepper.h"
-#include "motion.h"
+//#include "stepper.h"
+//#include "motion.h"
 
 #define MAX_SHAPES 100
 
@@ -67,8 +67,8 @@ extern float pos_x;
 extern float pos_y;
 extern float pos_z;
 
-uint16_t Drehzahl = 0;      //* Umdrehungen pro Minute
-uint16_t Vorschub = 0;
+float Drehzahl = 0;      //* Umdrehungen pro Minute
+float Vorschub = 0;
 uint8_t event = 0;      //? temporäre variable, wird später nicht mehr benötigt
 
 
@@ -129,7 +129,7 @@ void send_emergency_stopp(){
 void send_test(int i){
     char static reply [64];
     if (i == 8){
-        sprintf(reply, "%hu, %hu\n", Drehzahl, Vorschub);
+        sprintf(reply, "%.2f, %.2f\n", Drehzahl, Vorschub);
         CDC_Transmit_FS((uint8_t*)reply, strlen(reply));
     }
     else if (i == 10){
@@ -155,15 +155,15 @@ void read_data(uint8_t* buf, uint32_t len){
 
                 //! Not-Stopp immer aktiv
                 if (strcmp(temp_buffer, "e3") == 0){
-                    Stepper_StopAll();
+                    //Stepper_StopAll();
                     event = 3;                    //? temporär
-                    send_test(event);          //? temporär
+                    //send_test(event);          //? temporär
                 }
 
                 else if (current_data_state == CONFIG){      //§ Config Modus
                     if (sscanf(temp_buffer, "e11,%c", &Modus) == 1){
                         event = 11;
-                        send_test(event);       //?  temporär
+                        //send_test(event);       //?  temporär
                         if (Modus == 'b'){
                             //todo State auf bohren setzen
                             send_ack();
@@ -178,15 +178,18 @@ void read_data(uint8_t* buf, uint32_t len){
                     }
                     else if (sscanf(temp_buffer, "e10,%f", &bewegung) == 1){
                         event = 10;             //?temporär
-                        send_test(event);       //?temporär
+                        //send_test(event);       //?temporär
                         //todo z ansteuern
+                        send_ack();
                     }
                     else if (strcmp(temp_buffer, "e9") == 0){
                         //todo z-Wert speichern
+                        send_ack();
                     }
-                    else if(sscanf(temp_buffer, "e8,%hu,%hu", &Drehzahl, &Vorschub) == 2){
-                        event = 8;                  //?temporär
-                        send_test(event);       //?temporär
+                    else if(sscanf(temp_buffer, "e8,%f,%f", &Drehzahl, &Vorschub) == 2){
+                        event = 8;
+                        send_ack();                 
+                        //send_test(event);       //?temporär
                     }
                     else if (sscanf(temp_buffer, "e7,%hu", &number_of_shapes) == 1){
                         if (number_of_shapes <= MAX_SHAPES){
@@ -267,6 +270,7 @@ void read_data(uint8_t* buf, uint32_t len){
                     if (strcmp(temp_buffer, "e6") == 0){ 
                         current_data_state == MILLING;       
                         //todo motor start
+                        send_ack();
                     }
                     else {
                         send_nack();
