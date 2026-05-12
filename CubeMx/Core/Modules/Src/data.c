@@ -9,7 +9,7 @@
 #include "stdbool.h"
 //#include "stepper.h"
 //#include "motion.h"
-
+//kommentar
 Shape_t milling_queue[MAX_SHAPES];          //* Array in dem die Fräsdaten gespeichert werden
 uint16_t shape_index = 0;                   //* Wie viele Formen aktuell
 
