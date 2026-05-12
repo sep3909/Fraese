@@ -29,6 +29,8 @@
 /* USER CODE BEGIN Includes */
 #include "usbd_cdc_if.h"
 #include "SpindleMotor.h"
+#include "stepper.h"
+#include "motion.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -38,6 +40,14 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+#define PITCH_MM 8
+#define FULLSTEPS 1
+#define MICROSTEPS 1
+#define STEPS_PER_REV 200
+#define MM_PER_STEP (PITCH_MM / (STEPS_PER_REV * MICROSTEPS))
+
+#define TIM_UPDATE_HZ ((uint32_t)11550)
+#define SPEED_CODE_MM_PER_S_TO_CODE(mm_per_s) ((uint32_t)((TIM_UPDATE_HZ * (MM_PER_STEP)) / (mm_per_s)))
 
 /* USER CODE END PD */
 
@@ -89,6 +99,7 @@ int main(void)
 
   /* USER CODE BEGIN SysInit */
   spindleMotorInit();
+  Stepper_Init();
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
@@ -99,6 +110,7 @@ int main(void)
   MX_USB_DEVICE_Init();
   MX_TIM9_Init();
   /* USER CODE BEGIN 2 */
+ 
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -108,39 +120,10 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-    //* Blinky
-    HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_15);
-        HAL_Delay(200);
+    
+    uint32_t speed = SPEED_CODE_MM_PER_S_TO_CODE(10);
+   
 
-    //* Begin codebe beispiel für Komunikation
-        if (DataReady == 1) 
-    {
-        // 1. Flag sofort zurücksetzen!
-        DataReady = 0;
-
-        // 2. Logik: Was soll passieren?
-        if (strcmp((char*)UserRxBuffer, "PING") == 0) 
-        {
-            // Beispiel: LED umschalten
-            HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_12); 
-
-            // Antwort an Python schicken
-            char *reply = "Du kleine Hure\n";
-            CDC_Transmit_FS((uint8_t*)reply, strlen(reply));
-        }
-        else 
-        {
-            // Ein Echo schicken für alles andere
-            char echo[80];
-            sprintf(echo, "Ich habe erhalten: %s\n", UserRxBuffer);
-            CDC_Transmit_FS((uint8_t*)echo, strlen(echo));
-        }
-    }
-    //* Ende Kommunikation
-
-    /* USER CODE END WHILE */
-
-    /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
 }
@@ -191,6 +174,14 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
+
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+  // Stepper läuft über Timer-Interrupt.
+  if (htim->Instance == TIM2) {
+    Stepper_Update();
+  }
+}
 
 /* USER CODE END 4 */
 
