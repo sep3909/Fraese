@@ -30,6 +30,9 @@
 #include "usbd_cdc_if.h"
 #include "stateMachine.h"
 #include "SpindleMotor.h"
+#include "globals.h"
+#include "data.h"
+#include "stepper.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -99,6 +102,7 @@ int main(void)
   MX_USB_DEVICE_Init();
   MX_TIM9_Init();
   MX_TIM2_Init();
+  MX_TIM3_Init();
   /* USER CODE BEGIN 2 */
   millingMachineInit(); //init of state machine, initialisiert auch motoren, Kommunikation
   /* USER CODE END 2 */
@@ -106,58 +110,38 @@ int main(void)
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
-  {  
+  {
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-    //* Blinky
-    
 
-    //* Begin codebsp beispiel für Komunikation
-    //     if (DataReady == 1) 
-    // {
-    //     // 1. Flag sofort zurücksetzen!
-    //     DataReady = 0;
-
-    //     // 2. Logik: Was soll passieren?
-    //     if (strcmp((char*)UserRxBuffer, "PING") == 0) 
-    //     {
-    //         // Beispiel: LED umschalten
-    //         HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_12); 
-
-    //         // Antwort an Python schicken
-    //         char *reply = "Du kleine Hure\n";
-    //         CDC_Transmit_FS((uint8_t*)reply, strlen(reply));
-    //     }
-    //     else 
-    //     {
-    //         // Ein Echo schicken für alles andere
-    //         char echo[80];
-    //         sprintf(echo, "Ich habe erhalten: %s\n", UserRxBuffer);
-    //         CDC_Transmit_FS((uint8_t*)echo, strlen(echo));
-    //     }
-    // }
-    //* Ende Kommunikation
-    //* Test for h bridge
-    H_Bridge_set_DutyCycle(99); // Setze Duty Cycle auf 50%
-    spindleMotorSetDirection(1); // Setze Drehrichtung auf rüpckwärts
-    spindleMotorStart(); // Starte den Motor
-
-    if (HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_0) == GPIO_PIN_SET) {
-            spindleMotorStop();
-            HAL_GPIO_WritePin(GPIOD, GPIO_PIN_15, GPIO_PIN_RESET);
     }
-    else
-    {
-      HAL_GPIO_WritePin(GPIOD, GPIO_PIN_15, GPIO_PIN_SET);
-    }
-
-    /* USER CODE END WHILE */
-
-    /* USER CODE BEGIN 3 */
   /* USER CODE END 3 */
-  }
 }
+
+
+//* Timer Interrupt Aufruf alle 200ms
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
+
+  //* Timer für Datenübertragung ///////////////////////////////////////////////////////////////////////////
+    if (htim->Instance == TIM3){
+        float pos_x=0;
+        float pos_y=0;
+        float pos_z=0;
+        if (current_data_state == MILLING){   
+            pos_x = pos_x + 0.5; 
+            pos_y = pos_y + 0.5;                      //* nur wenn gerade gefräst wird, werden Daten gesendet
+            send_position(pos_x, pos_y, pos_z);
+        }         
+    }
+
+    //* Timer für Linearmotoren  /////////////////////////////////////////////////////////////////////////////
+     // Stepper läuft über Timer-Interrupt.
+    if (htim->Instance == TIM2) {
+      Stepper_Update();
+    }
+
+  }
 
 /**
   * @brief System Clock Configuration
