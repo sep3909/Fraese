@@ -29,7 +29,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "usbd_cdc_if.h"
-#include "data.h"
+//#include "data.h"   //?nicht notwendig in main
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -124,29 +124,7 @@ int main(void)
     HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_15);
         HAL_Delay(2000);
 
-        if (DataReady == 2) 
-    {
-        // 1. Flag sofort zurücksetzen!
-        DataReady = 0;
 
-        // 2. Logik: Was soll passieren?
-        if (strcmp((char*)UserRxBuffer, "PING") == 0) 
-        {
-            // Beispiel: LED umschalten
-            HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_12); 
-
-            // Antwort an Python schicken
-            send_ack();
-            //send_position(pos_x, pos_y, pos_z);
-        }
-        else 
-        {
-            // Ein Echo schicken für alles andere
-            //char echo[80];
-            //sprintf(echo, "Ich habe erhalten: %s\n", UserRxBuffer);
-            //CDC_Transmit_FS((uint8_t*)echo, strlen(echo));
-        }
-    }
 
     /* USER CODE END WHILE */
 

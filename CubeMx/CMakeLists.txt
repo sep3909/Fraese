@@ -58,7 +58,8 @@ target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
 )
 
 target_link_options(${CMAKE_PROJECT_NAME} PRIVATE 
-    -u _printf_float
+    -u_printf_float 
+    -u_scanf_float
     )
 
 # Add project symbols (macros)

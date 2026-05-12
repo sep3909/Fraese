@@ -22,7 +22,7 @@
 #include "usbd_cdc_if.h"
 
 /* USER CODE BEGIN INCLUDE */
-
+#include "data.h"
 /* USER CODE END INCLUDE */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -94,11 +94,6 @@ uint8_t UserRxBufferFS[APP_RX_DATA_SIZE];
 uint8_t UserTxBufferFS[APP_TX_DATA_SIZE];
 
 /* USER CODE BEGIN PRIVATE_VARIABLES */
-	  extern uint8_t  UserRxBuffer[128];
-  	extern uint8_t DataReady;
-    extern uint8_t event;  //! eigene Event-Variable
-  	char temp_buffer[128];
-  	uint8_t temp_index =0;
 /* USER CODE END PRIVATE_VARIABLES */
 
 /**
@@ -265,29 +260,8 @@ static int8_t CDC_Control_FS(uint8_t cmd, uint8_t* pbuf, uint16_t length)
 static int8_t CDC_Receive_FS(uint8_t* Buf, uint32_t *Len)
 {
   /* USER CODE BEGIN 6 */
-  for (uint32_t i = 0; i < *Len; i++)
-  {
-    char c = (char)Buf[i];
-
-    if (c == '\n' || c == '\r') // Wenn Zeilenende erkannt
-    {
-      if (temp_index > 0) // Nur kopieren, wenn wir auch Daten haben
-      {
-        temp_buffer[temp_index] = '\0'; // String Ende setzen
-
-        // Jetzt die Daten in die main.c "beamen"
-        strcpy((char*)UserRxBuffer, temp_buffer);
-        DataReady = 1; // Flag setzen: Main-Loop darf jetzt arbeiten
-
-        temp_index = 0; // Lokalen Puffer für nächsten Befehl leeren
-      }
-    }
-    else if (temp_index < sizeof(temp_buffer) - 1)
-    {
-      temp_buffer[temp_index++] = c; // Zeichen sammeln
-    }
-  }
-
+  read_data(Buf, *Len);
+  
   // WICHTIG: USB wieder scharf schalten für das nächste Paket
   USBD_CDC_SetRxBuffer(&hUsbDeviceFS, &Buf[0]);
   USBD_CDC_ReceivePacket(&hUsbDeviceFS);
