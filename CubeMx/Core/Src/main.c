@@ -112,7 +112,7 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
-
+    checkStateMachine();
     /* USER CODE BEGIN 3 */
 
     }
@@ -173,7 +173,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
         static float pos_x=0;
         static float pos_y=0;
         static float pos_z=0;
-        if (current_data_state == MILLING){   
+        if (millingMachine.state == MILLING){   
             pos_x = pos_x + 0.5; 
             pos_y = pos_y + 0.5;                      //* nur wenn gerade gefräst wird, werden Daten gesendet
             send_position(pos_x, pos_y, pos_z);
@@ -183,7 +183,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
     //* Timer für Linearmotoren  /////////////////////////////////////////////////////////////////////////////
      // Stepper läuft über Timer-Interrupt.
     if (htim->Instance == TIM2) {
-      if (current_data_state == MILLING){
+      if (millingMachine.state == MILLING){
         Stepper_Update();
       }
       

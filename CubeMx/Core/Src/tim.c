@@ -43,6 +43,7 @@ void MX_TIM2_Init(void)
   /* USER CODE BEGIN TIM2_Init 1 */
 
   /* USER CODE END TIM2_Init 1 */
+  //! /////// LANGSAMER GEMACHT!!!!!!/////////////////////////////////////////////
   htim2.Instance = TIM2;
   // htim2.Init.Prescaler = 71;
   htim2.Init.Prescaler = 31999; 

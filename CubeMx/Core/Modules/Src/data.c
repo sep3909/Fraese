@@ -1,4 +1,5 @@
 #include "main.h"
+#include "stateMachine.h"
 #include "stm32f4xx_hal_tim.h"
 #include "usb_device.h"
 #include "usbd_cdc_if.h"
@@ -7,26 +8,29 @@
 #include <string.h>
 #include "data.h"
 #include "stdbool.h"
+#include "globals.h"
+
 //#include "stepper.h"
 //#include "motion.h"
 
 Shape_t milling_queue[MAX_SHAPES];          //* Array in dem die Fräsdaten gespeichert werden
 uint16_t shape_index = 0;                   //* Wie viele Formen aktuell
 
-float Drehzahl = 0;      //* Umdrehungen pro Minute
-float Vorschub = 0;
+
 uint8_t event = 0;      //? temporäre variable, wird später nicht mehr benötigt
 
 
 char temp_buffer[128];
 uint8_t temp_index = 0;
 
-char Modus;
 float bewegung = 0;         //noch global, später lokal
+char Modus;
+float Drehzahl = 0;      //* Umdrehungen pro Minute
+float Vorschub = 0;
 
 uint16_t number_of_shapes = 0;      
 
-DataState_t current_data_state = CONFIG;
+//DataState_t current_data_state = CONFIG;
 
 char line_buffer[128];      //Input buffer
 uint8_t line_index = 0;     //position in string
@@ -62,23 +66,6 @@ void send_emergency_stopp(){
     CDC_Transmit_FS((uint8_t*)reply, strlen(reply));
 }
 
-//? temporäre Testfunktion
-void send_test(int i){
-    char static reply [64];
-    if (i == 8){
-        sprintf(reply, "%.2f, %.2f\n", Drehzahl, Vorschub);
-        CDC_Transmit_FS((uint8_t*)reply, strlen(reply));
-    }
-    else if (i == 10){
-        sprintf(reply, "%.2f\n", bewegung);
-        CDC_Transmit_FS((uint8_t*)reply, strlen(reply));
-    }
-    else{
-        sprintf(reply, "%d\n", i);
-        CDC_Transmit_FS((uint8_t*)reply, strlen(reply));
-    }
-}
-
 
 //? function for reading event
 void read_data(uint8_t* buf, uint32_t len){
@@ -95,45 +82,46 @@ void read_data(uint8_t* buf, uint32_t len){
                     //Stepper_StopAll();
                     send_ack();
                     event = 3;
-                    current_data_state = CONFIG;                    
-                    //send_test(event);          //? temporär
+                    millingMachine.state = INITIAL;                    
                 }
 
-                else if (current_data_state == CONFIG){      //§ Config Modus
+                else if (millingMachine.state == INITIAL){      //§ INITIAL Modus
                     if (sscanf(temp_buffer, "e11,%c", &Modus) == 1){
                         event = 11;
                         //send_test(event);       //?  temporär
                         if (Modus == 'b'){
-                            //todo State auf bohren setzen
+                            //TODO vorrübergehend -> gui wartezeit
                             send_ack();
+                            millingMachine.state = SET_X;
                         }
                         else if (Modus == 'f'){
-                            //todo State auf fräsen setzen
+                            //TODO vorrübergehend -> gui wartezeit
                             send_ack();
+                            millingMachine.state = SET_X;
                         }
                         else {
                             send_nack();
                         }
                     }
-                    else if (sscanf(temp_buffer, "e10,%f", &bewegung) == 1){
-                        event = 10;             //?temporär
-                        //send_test(event);       //?temporär
-                        //todo z ansteuern
+                }
+                else if (millingMachine.state == CONFIG){       //§ CONFIG Modus
+                    //TODO vorrübergehend -> gui wartezeit
+                    if(sscanf(temp_buffer, "e10,%f", &bewegung)==1){
                         send_ack();
                     }
+
                     else if (strcmp(temp_buffer, "e9") == 0){
                         //todo z-Wert speichern
                         send_ack();
                     }
                     else if(sscanf(temp_buffer, "e8,%f,%f", &Drehzahl, &Vorschub) == 2){
-                        event = 8;
                         send_ack();                 
-                        //send_test(event);       //?temporär
                     }
+
                     else if (sscanf(temp_buffer, "e7,%hu", &number_of_shapes) == 1){
                         if (number_of_shapes <= MAX_SHAPES){
                             send_ack();
-                            current_data_state = TRANSFER;
+                            millingMachine.state = TRANSFER;
                         }
                         else{
                             send_nack();
@@ -144,12 +132,12 @@ void read_data(uint8_t* buf, uint32_t len){
                     }
                 }
 
-                else if (current_data_state == TRANSFER){            //§ Transfer Modus
+                else if (millingMachine.state == TRANSFER){            //§ Transfer Modus
                     float x1, y1, x2, y2, x3, y3, r, t;         //Temporäre Variablen zum parsen
                     bool parsed_successfully = false;
                     if (shape_index < number_of_shapes){
                        //* Kreis
-                       if (sscanf(temp_buffer, "kreis,%f,%f,%f,%f", &x1, &y2, &r, &t) == 4){
+                       if (sscanf(temp_buffer, "kreis,%f,%f,%f,%f", &x1, &y1, &r, &t) == 4){
                         milling_queue[shape_index].type = KREIS;
                         milling_queue[shape_index].t = t;
                         milling_queue[shape_index].geo.kreis.x = x1;
@@ -195,7 +183,7 @@ void read_data(uint8_t* buf, uint32_t len){
                        if (parsed_successfully == true){
                         shape_index ++;     //Nächste Form
                         if (shape_index >= number_of_shapes){
-                            current_data_state = READY;
+                            millingMachine.state = READY;
                             send_ack();
                         }
                         send_next();
@@ -205,28 +193,29 @@ void read_data(uint8_t* buf, uint32_t len){
                        }
                     }
                 }
-                else if (current_data_state == READY){             //§ Ready Modus
+                else if (millingMachine.state == READY){             //§ Ready Modus
                     if (strcmp(temp_buffer, "e6") == 0){ 
-                        current_data_state = MILLING;
-                        send_ack();       
-                        //todo motor start
+                        if(Modus == 'b'){
+                            millingMachine.state = DRILLING;
+                        }
+                        else if (Modus == 'f'){
+                            millingMachine.state = MILLING;
+                        }
+                        send_ack();
                     }
                     else {
                         send_nack();
                     }
                 }
-                else if (current_data_state == MILLING){            //§ Milling Modus
+                else if (millingMachine.state == MILLING || millingMachine.state == DRILLING){            //§ Milling Modus
                     if (strcmp(temp_buffer, "e4") == 0){
-                        current_data_state = READY;
+                        millingMachine.state = READY;
                         send_ack();
-                        //todo motor stop
                     }
                     else{
                         send_nack();
                     }
                 }
-
-                //todo play und milling
                 temp_index = 0;     //Puffer für nächsten Befehl leeren
             }
         }
