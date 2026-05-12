@@ -1,22 +1,24 @@
+#ifndef STATEMACHINE_H
+#define STATEMACHINE_H
 #include "SpindleMotor.h"
 // states for state Machine
 typedef enum {
-    initialState,           //initial -> warten auf e11 (fräsen oder bohren)
-    configZaxisAndSpeed,    //konfiguration der z achse und spindle speed
-    idle,                   // ready to work, befehle empfangen
-    milling,                //während der fräsens
-    paused,                 // fräse wurde über GUI pasuiert
-    emergencyStop           
+    INITIAL,           //initial -> warten auf e11 (fräsen oder bohren)
+    CONFIGURATION,                 //konfiguration der z achse und spindle speed
+    IDLE,                   // ready to work, befehle empfangen
+    MILL,                //während der fräsens
+    DRILL,          //während des bohrens
+    PAUSED,                 // fräse wurde über GUI pasuiert
+    FAIL_SAFE           
 } stateMachineStates;
 
 typedef struct millingMachine_struct{
-    stateMachineStates currentState;    //aktueller state der Fräse
-    float xpos;                         // x position -> Linearmotor
-    float ypos;                         // y position -> Linearmotor
-    float zpos;                         // z position -> Linearmotor
+    stateMachineStates volatile state;   //aktueller state der Fräse
+    float xpos;                                 // x position -> Linearmotor
+    float ypos;                                 // y position -> Linearmotor
+    float zpos;                                 // z position -> Linearmotor
 } millingMachine_struct;
-
-extern millingMachine_struct millingMachine; // globale Variable für den Zustand der Fräse, damit in allen files zugreifbar
 
 void millingMachineInit(void);  // Initialisierung der Fräse, initialisiert auch motoren, usw in main
 void checkStateMachine(void); // hier wird der aktuelle state abgefragt und ausgeführt, wird in main in while loop aufgerufen
+#endif // STATEMACHINE_H

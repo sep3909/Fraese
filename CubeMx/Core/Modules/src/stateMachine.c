@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include "spindleMotor.h"
 
-millingMachine_struct millingMachine = {initialState,.xpos = 0.0f,.ypos = 0.0f, .zpos = 0.0f};
+volatile millingMachine_struct millingMachine = {INITIAL,.xpos = 0.0f,.ypos = 0.0f, .zpos = 0.0f};
 
 void millingMachineInit(void){
     spindleMotorInit();
@@ -13,38 +13,38 @@ void millingMachineInit(void){
 
 void checkStateMachine(void){
     //hier wird der aktuelle state abgefragt und ausgeführt
-    switch(millingMachine.currentState){
-        case initialState:
+    // switch(millingMachine.currentState){
+    //     case initialState:
                 
-            break;
-        case configZaxisAndSpeed:
+    //         break;
+    //     case configZaxisAndSpeed:
+ 
+    //         break;
 
-            break;
+    //     case idle:
 
-        case idle:
+    //         break;
 
-            break;
+    //     case milling:
 
-        case milling:
+    //         break;
 
-            break;
+    //     case paused:
 
-        case paused:
+    //         break;
 
-            break;
+    //     case failed:
 
-        case emergencyStop:
-
-            break;
-    }
+    //         break;
+    // }
 }
 
 
 //! die action funktionen evtl. in files auslagern, dass state machine nicht zu groß wird?
-void initialStateAction(void){
+void initialAction(void){
 }
 
-void configZaxisAndSpeedAction(void){
+void configAction(void){
 } 
 
 void idleAction(void){

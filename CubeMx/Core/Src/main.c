@@ -119,30 +119,6 @@ int main(void)
   /* USER CODE END 3 */
 }
 
-
-//* Timer Interrupt Aufruf alle 200ms
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
-
-  //* Timer für Datenübertragung ///////////////////////////////////////////////////////////////////////////
-    if (htim->Instance == TIM3){
-        float pos_x=0;
-        float pos_y=0;
-        float pos_z=0;
-        if (current_data_state == MILLING){   
-            pos_x = pos_x + 0.5; 
-            pos_y = pos_y + 0.5;                      //* nur wenn gerade gefräst wird, werden Daten gesendet
-            send_position(pos_x, pos_y, pos_z);
-        }         
-    }
-
-    //* Timer für Linearmotoren  /////////////////////////////////////////////////////////////////////////////
-     // Stepper läuft über Timer-Interrupt.
-    if (htim->Instance == TIM2) {
-      Stepper_Update();
-    }
-
-  }
-
 /**
   * @brief System Clock Configuration
   * @retval None
@@ -189,7 +165,31 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
+//* Timer Interrupt Aufruf alle 200ms
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
 
+  //* Timer für Datenübertragung ///////////////////////////////////////////////////////////////////////////
+    if (htim->Instance == TIM3){
+        static float pos_x=0;
+        static float pos_y=0;
+        static float pos_z=0;
+        if (current_data_state == MILLING){   
+            pos_x = pos_x + 0.5; 
+            pos_y = pos_y + 0.5;                      //* nur wenn gerade gefräst wird, werden Daten gesendet
+            send_position(pos_x, pos_y, pos_z);
+        }         
+    }
+
+    //* Timer für Linearmotoren  /////////////////////////////////////////////////////////////////////////////
+     // Stepper läuft über Timer-Interrupt.
+    if (htim->Instance == TIM2) {
+      if (current_data_state == MILLING){
+        Stepper_Update();
+      }
+      
+    }
+
+  }
 /* USER CODE END 4 */
 
 /**

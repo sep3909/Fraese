@@ -1,4 +1,5 @@
 #include "stepper.h"
+#include "stm32f4xx_hal_gpio.h"
 
 
 /* * 1. Instanzen der Motoren definieren
@@ -93,7 +94,7 @@ void Stepper_SetTarget(StepperMotor* motor, long new_target, uint32_t speed) {
 void Stepper_Update(void) {
     // Array mit allen Motoren, um sie in einer Schleife abzuarbeiten
     StepperMotor* motors[] = {&motorX, &motorY, &motorZ};
-
+    HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_15);
     for (int i = 0; i < 3; i++) {
         StepperMotor* m = motors[i];
 
