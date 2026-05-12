@@ -21,7 +21,6 @@
 #include "i2c.h"
 #include "i2s.h"
 #include "spi.h"
-#include "stm32f4xx_hal_gpio.h"
 #include "tim.h"
 #include "usb_device.h"
 #include "gpio.h"
@@ -30,6 +29,7 @@
 /* USER CODE BEGIN Includes */
 #include "usbd_cdc_if.h"
 #include "stateMachine.h"
+#include "SpindleMotor.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -79,7 +79,7 @@ int main(void)
   /* MCU Configuration--------------------------------------------------------*/
 
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
-HAL_Init();
+  HAL_Init();
 
   /* USER CODE BEGIN Init */
 
@@ -98,6 +98,7 @@ HAL_Init();
   MX_SPI1_Init();
   MX_USB_DEVICE_Init();
   MX_TIM9_Init();
+  MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
   millingMachineInit(); //init of state machine, initialisiert auch motoren, Kommunikation
   /* USER CODE END 2 */
@@ -155,7 +156,7 @@ HAL_Init();
 
     /* USER CODE BEGIN 3 */
   /* USER CODE END 3 */
-}
+  }
 }
 
 /**

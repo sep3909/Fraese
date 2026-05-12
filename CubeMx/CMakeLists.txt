@@ -45,15 +45,23 @@ target_link_directories(${CMAKE_PROJECT_NAME} PRIVATE
 # Add sources to executable HIER müsen dateien rein
 target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     # Add user sources here
-    Core/Modules/src/SpindleMotor.c
-    Core/Modules/src/endStopSwitch.c
-    Core/Modules/src/stateMachine.c
+    Core/Modules/Src/SpindleMotor.c
+    Core/Modules/Src/endStopSwitch.c
+    Core/Modules/Src/stateMachine.c
+    Core/Modules/Src/stepper.c
+    Core/Modules/Src/motion.c
+    Core/Modules/Src/data.c
 )
 
 # Add include paths
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
     # Add user defined include paths
     Core/Modules/Inc
+)
+
+target_link_options(${CMAKE_PROJECT_NAME} PRIVATE
+    -u_printf_float
+    -u_scanf_float
 )
 
 # Add project symbols (macros)
