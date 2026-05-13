@@ -1,24 +1,41 @@
 #ifndef STATEMACHINE_H
 #define STATEMACHINE_H
 #include "SpindleMotor.h"
+#include "stateMachine.h"
 // states for state Machine
 typedef enum {
-    INITIAL,           //initial -> warten auf e11 (fräsen oder bohren)
-    CONFIGURATION,                 //konfiguration der z achse und spindle speed
-    IDLE,                   // ready to work, befehle empfangen
-    MILL,                //während der fräsens
-    DRILL,          //während des bohrens
+    INITIAL,                //initial -> warten auf e11 (fräsen oder bohren)
+    SET_X,                  // x Achse auf 0 fahren
+    SET_Y,                  // y Achse auf 0 fahren
+    SET_Z,                  // z Achse auf 0 fahren
+    CONFIG,                 //konfiguration der z achse und spindle speed
+    TRANSFER,               //Daten werden übertragen
+    READY,                   // ready to work, befehle empfangen
+    MILLING,                //während der fräsens
+    DRILLING,               //während des bohrens
     PAUSED,                 // fräse wurde über GUI pasuiert
     FAIL_SAFE           
-} stateMachineStates;
+} millingMachineStates_Enum;
 
-typedef struct millingMachine_struct{
-    stateMachineStates volatile state;   //aktueller state der Fräse
-    float xpos;                                 // x position -> Linearmotor
-    float ypos;                                 // y position -> Linearmotor
-    float zpos;                                 // z position -> Linearmotor
-} millingMachine_struct;
+typedef struct millingMachine_t{
+    millingMachineStates_Enum volatile state;           //aktueller state der Fräse
+    float xpos;                                         // x position -> Linearmotor
+    float ypos;                                         // y position -> Linearmotor
+    float zpos;                                         // z position -> Linearmotor
+} millingMachine_t;
 
-void millingMachineInit(void);  // Initialisierung der Fräse, initialisiert auch motoren, usw in main
-void checkStateMachine(void); // hier wird der aktuelle state abgefragt und ausgeführt, wird in main in while loop aufgerufen
+void millingMachineInit(void);
+void checkStateMachine(void);
+void initialAction(void);
+void set_x_Action(void);
+void set_y_Action(void);
+void set_z_Action(void);
+void configAction(void);
+void transferAction(void);
+void readyAction(void);
+void millingAction(void);
+void drillingAction(void);
+void pausedAction(void);
+void FailSafeAction(void);
+
 #endif // STATEMACHINE_H
