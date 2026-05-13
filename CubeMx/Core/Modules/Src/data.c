@@ -90,11 +90,6 @@ void read_data(uint8_t* buf, uint32_t len){
                         event = 11;
                         //send_test(event);       //?  temporär
                         if (Modus == 'b'){
-<<<<<<< HEAD
-                            millingMachine.state = SET_X;
-                        }
-                        else if (Modus == 'f'){
-=======
                             //TODO vorrübergehend -> gui wartezeit
                             send_ack();
                             millingMachine.state = SET_X;
@@ -102,7 +97,6 @@ void read_data(uint8_t* buf, uint32_t len){
                         else if (Modus == 'f'){
                             //TODO vorrübergehend -> gui wartezeit
                             send_ack();
->>>>>>> 09baa504af6e5888323966b33c0e5f136545b9cc
                             millingMachine.state = SET_X;
                         }
                         else {
@@ -111,18 +105,12 @@ void read_data(uint8_t* buf, uint32_t len){
                     }
                 }
                 else if (millingMachine.state == CONFIG){       //§ CONFIG Modus
-<<<<<<< HEAD
-                    sscanf(temp_buffer, "e10,%f", &bewegung);
-
-                    if (strcmp(temp_buffer, "e9") == 0){
-=======
                     //TODO vorrübergehend -> gui wartezeit
                     if(sscanf(temp_buffer, "e10,%f", &bewegung)==1){
                         send_ack();
                     }
 
                     else if (strcmp(temp_buffer, "e9") == 0){
->>>>>>> 09baa504af6e5888323966b33c0e5f136545b9cc
                         //todo z-Wert speichern
                         send_ack();
                     }
@@ -207,27 +195,19 @@ void read_data(uint8_t* buf, uint32_t len){
                 }
                 else if (millingMachine.state == READY){             //§ Ready Modus
                     if (strcmp(temp_buffer, "e6") == 0){ 
-<<<<<<< HEAD
-                        millingMachine.state = MILLING;
-=======
                         if(Modus == 'b'){
                             millingMachine.state = DRILLING;
                         }
                         else if (Modus == 'f'){
                             millingMachine.state = MILLING;
                         }
->>>>>>> 09baa504af6e5888323966b33c0e5f136545b9cc
                         send_ack();
                     }
                     else {
                         send_nack();
                     }
                 }
-<<<<<<< HEAD
-                else if (millingMachine.state == MILLING){            //§ Milling Modus
-=======
                 else if (millingMachine.state == MILLING || millingMachine.state == DRILLING){            //§ Milling Modus
->>>>>>> 09baa504af6e5888323966b33c0e5f136545b9cc
                     if (strcmp(temp_buffer, "e4") == 0){
                         millingMachine.state = READY;
                         send_ack();
