@@ -11,24 +11,24 @@
 #include "gpio.h"
 #include "usbd_cdc_if.h"
 
-//!------------------------------------------------------------------------------------------
-//! LEGENDE
-//! e0,ack: sendet der STM an die GUI um ein positive Bestätigung zu senden
-//! e0,nack: sendet der STM an die GUI um eine negative Bestätigung zu senden
-//! e0,next: sendet der STM an die GUI um zu signalisieren, dass die nächste Form gesendet werden kann
-//! e1: emergency stop, sendet STM an GUI im Falle eines Not-Stopps
-//! e2: fertig gefräst, sendet STM an GUI
-//! e3: Stop-Befehl von GUI an STM
-//! e4: Pause-Befehl von GUI an STM
-//! e5,x,y,z: aktuelle Position wird an GUI gesendet
-//! e6: play-Befehl von GUI an STM
-//! e7,zahl: Start der Datenübertragung mit Anzahl an Formen wird übertragen von GUI zu STM
-//! e8,zahl,zahl: Drehzahl und Vorschub wird von GUI an STM übertragen
-//! e9: Nutzer legt z-Pos fest von GUI zu STM
-//! e10,zahl: z-Pos Konfiguration von GUI zu STM
-//! e11,f: Nutzer legt Modus auf fräsen fest von GUI zu STM
-//! e11,b: Nutzer legt Modus auf bohren fest von GUI zu STM
-//!-------------------------------------------------------------------------------------------
+//%------------------------------------------------------------------------------------------
+//% LEGENDE
+//% e0,ack: sendet der STM an die GUI um ein positive Bestätigung zu senden
+//% e0,nack: sendet der STM an die GUI um eine negative Bestätigung zu senden
+//% e0,next: sendet der STM an die GUI um zu signalisieren, dass die nächste Form gesendet werden kann
+//% e1: emergency stop, sendet STM an GUI im Falle eines Not-Stopps
+//% e2: fertig gefräst, sendet STM an GUI
+//% e3: Stop-Befehl von GUI an STM
+//% e4: Pause-Befehl von GUI an STM
+//% e5,x,y,z: aktuelle Position wird an GUI gesendet
+//% e6: play-Befehl von GUI an STM
+//% e7,zahl: Start der Datenübertragung mit Anzahl an Formen wird übertragen von GUI zu STM
+//% e8,zahl,zahl: Drehzahl und Vorschub wird von GUI an STM übertragen
+//% e9: Nutzer legt z-Pos fest von GUI zu STM
+//% e10,zahl: z-Pos Konfiguration von GUI zu STM
+//% e11,f: Nutzer legt Modus auf fräsen fest von GUI zu STM
+//% e11,b: Nutzer legt Modus auf bohren fest von GUI zu STM
+//%-------------------------------------------------------------------------------------------
 
 #define MAX_SHAPES 500
 
