@@ -84,7 +84,7 @@ void set_z_Action(void){
     HAL_Delay(2000);
     HAL_GPIO_WritePin(GPIOD, GPIO_PIN_14, GPIO_PIN_RESET);
     //TODO gui muss länger warten
-    // send_ack();                                                                         //ack an GUI -> config kann starten
+    send_ack();                                                                         //ack an GUI -> config kann starten
 }
 
 void configAction(void){

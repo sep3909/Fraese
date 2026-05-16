@@ -1,15 +1,18 @@
 #ifndef DATA_H
 #define DATA_H
 
-#include "main.h"
-#include "i2c.h"
-#include "i2s.h"
-#include "spi.h"
-#include "stm32f4xx_hal_tim.h"
-#include "tim.h"
-#include "usb_device.h"
-#include "gpio.h"
-#include "usbd_cdc_if.h"
+// #include "main.h"
+// #include "i2c.h"
+// #include "i2s.h"
+// #include "spi.h"
+// #include "stm32f4xx_hal_tim.h"
+// #include "tim.h"
+// #include "usb_device.h"
+// #include "gpio.h"
+// #include "usbd_cdc_if.h"
+
+#include <stdint.h>
+#include <stddef.h>
 
 //%------------------------------------------------------------------------------------------
 //% LEGENDE
@@ -30,7 +33,7 @@
 //% e11,b: Nutzer legt Modus auf bohren fest von GUI zu STM
 //%-------------------------------------------------------------------------------------------
 
-#define MAX_SHAPES 500
+#define MAX_SHAPES 200
 
 
 //* Formen
@@ -39,6 +42,7 @@ typedef enum{
     RECHTECK,
     DREIECK,
     LINIE,
+    PUNKT
 }Form_t;
 
 typedef struct{
@@ -70,6 +74,10 @@ typedef struct{
             float x2;
             float y2;
         }linie;
+        struct {
+            float x1;
+            float y1;
+        }punkt;
     }geo;               //geometrische Daten
 }Shape_t;
 

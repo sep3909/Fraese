@@ -1,4 +1,4 @@
-#include "main.h"
+#include "../../Inc/main.h"
 #include "stateMachine.h"
 #include "stm32f4xx_hal_tim.h"
 #include "usb_device.h"
@@ -81,14 +81,11 @@ void read_data(uint8_t* buf, uint32_t len){
                 if (strcmp(temp_buffer, "e3") == 0){
                     //Stepper_StopAll();
                     send_ack();
-                    event = 3;
                     millingMachine.state = INITIAL;                    
                 }
 
                 else if (millingMachine.state == INITIAL){      //§ INITIAL Modus
                     if (sscanf(temp_buffer, "e11,%c", &Modus) == 1){
-                        event = 11;
-                        //send_test(event);       //?  temporär
                         if (Modus == 'b'){
                             //TODO vorrübergehend -> gui wartezeit
                             send_ack();
@@ -96,7 +93,7 @@ void read_data(uint8_t* buf, uint32_t len){
                         }
                         else if (Modus == 'f'){
                             //TODO vorrübergehend -> gui wartezeit
-                            send_ack();
+                            //send_ack();
                             millingMachine.state = SET_X;
                         }
                         else {
@@ -132,7 +129,7 @@ void read_data(uint8_t* buf, uint32_t len){
                     }
                 }
 
-                else if (millingMachine.state == TRANSFER){            //§ Transfer Modus
+                else if (millingMachine.state == TRANSFER && Modus == 'f'){            //§ Transfer Modus im Fräsmodus
                     float x1, y1, x2, y2, x3, y3, r, t;         //Temporäre Variablen zum parsen
                     bool parsed_successfully = false;
                     if (shape_index < number_of_shapes){
@@ -180,6 +177,32 @@ void read_data(uint8_t* buf, uint32_t len){
                         milling_queue[shape_index].geo.linie.y2 = y2;
                         parsed_successfully = true;
                        }
+                       if (parsed_successfully == true){
+                        shape_index ++;     //Nächste Form
+                        if (shape_index >= number_of_shapes){
+                            millingMachine.state = READY;
+                            send_ack();
+                        }
+                        send_next();
+                       }
+                       else {
+                        send_nack();
+                       }
+                    }
+                }
+                else if (millingMachine.state == TRANSFER && Modus == 'b'){            //§ Transfer Modus im Bohrmodus
+                    float x1, y1, t;         //Temporäre Variablen zum parsen
+                    bool parsed_successfully = false;
+                    if (shape_index < number_of_shapes){
+                       //* PUNKT
+                       if (sscanf(temp_buffer, "punkt,%f,%f,%f", &x1, &y1, &t) == 3){
+                        milling_queue[shape_index].type = PUNKT;
+                        milling_queue[shape_index].t = t;
+                        milling_queue[shape_index].geo.punkt.x1 = x1;
+                        milling_queue[shape_index].geo.punkt.y1 = y1;
+                        parsed_successfully = true;
+                       } 
+
                        if (parsed_successfully == true){
                         shape_index ++;     //Nächste Form
                         if (shape_index >= number_of_shapes){
