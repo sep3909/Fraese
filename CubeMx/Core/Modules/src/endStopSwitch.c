@@ -4,8 +4,11 @@
 #include "SpindleMotor.h"
 #include "stateMachine.h"
 #include "globals.h"
-
+#include "stdbool.h"
 // wir daufgerufe, wenn endanschlagschalter ausgelöst wird --> nullposition finden oder oder emergency stop
+
+bool end_reached = false;           //! setzt Flag für den Aufruf
+
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
     
     //* Aktion wenn Endanschlagschalter während des Fräsens ausgelöst wird -> Not-Stopp
@@ -19,9 +22,8 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
         }
 
         //* Endanschlagsschalter wird während der Konfiguration ausgelöst -> z-Achse auf 0 setzen
-        if(millingMachine.state == CONFIG){
-            
+        if(millingMachine.state == SET_X || millingMachine.state == SET_Y || millingMachine.state == SET_Z){
+            end_reached = true;
         }
     }
- 
 }

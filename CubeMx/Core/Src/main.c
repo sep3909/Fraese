@@ -112,9 +112,8 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
-    checkStateMachine();
-    /* USER CODE BEGIN 3 */
 
+    /* USER CODE BEGIN 3 */
     }
   /* USER CODE END 3 */
 }
@@ -170,20 +169,26 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
 
   //* Timer für Datenübertragung ///////////////////////////////////////////////////////////////////////////
     if (htim->Instance == TIM3){
-        static float pos_x=0;
-        static float pos_y=0;
-        static float pos_z=0;
-        if (millingMachine.state == MILLING){   
-            pos_x = pos_x + 0.5; 
-            pos_y = pos_y + 0.5;                      //* nur wenn gerade gefräst wird, werden Daten gesendet
-            send_position(pos_x, pos_y, pos_z);
+        static float xpos_send = 0;
+        static float ypos_send = 0;
+        static float zpos_send = 0;
+        if (millingMachine.state == MILLING || millingMachine.state == DRILLING){
+            xpos_send = motorX.current_pos/100;
+            ypos_send = motorY.current_pos/100;
+            zpos_send = motorZ.current_pos/100;
+            //* nur wenn gerade gefräst wird, werden Daten gesendet
+            send_position(xpos_send, ypos_send, zpos_send);
         }         
     }
 
     //* Timer für Linearmotoren  /////////////////////////////////////////////////////////////////////////////
      // Stepper läuft über Timer-Interrupt.
     if (htim->Instance == TIM2) {
-      if (millingMachine.state == MILLING){
+      // Stepper werden nur geupdated, wenn nicht in folgenden States
+      if (millingMachine.state != READY &&        
+          millingMachine.state != FAIL_SAFE && 
+          millingMachine.state != TRANSFER &&
+          millingMachine.state != INITIAL){
         Stepper_Update();
       }
       

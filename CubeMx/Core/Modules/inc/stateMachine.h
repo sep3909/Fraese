@@ -2,6 +2,7 @@
 #define STATEMACHINE_H
 #include "SpindleMotor.h"
 #include "stateMachine.h"
+#include <stdint.h>
 // states for state Machine
 typedef enum {
     INITIAL,                //initial -> warten auf e11 (fräsen oder bohren)
@@ -13,7 +14,6 @@ typedef enum {
     READY,                   // ready to work, befehle empfangen
     MILLING,                //während der fräsens
     DRILLING,               //während des bohrens
-    PAUSED,                 // fräse wurde über GUI pasuiert
     FAIL_SAFE           
 } millingMachineStates_Enum;
 
@@ -22,6 +22,7 @@ typedef struct millingMachine_t{
     float xpos;                                         // x position -> Linearmotor
     float ypos;                                         // y position -> Linearmotor
     float zpos;                                         // z position -> Linearmotor
+    uint32_t speed;                                         // fräs oder bohr geschwindigkeit
 } millingMachine_t;
 
 void millingMachineInit(void);
@@ -37,5 +38,5 @@ void millingAction(void);
 void drillingAction(void);
 void pausedAction(void);
 void FailSafeAction(void);
-
+uint32_t calculateSteps(float mm);
 #endif // STATEMACHINE_H

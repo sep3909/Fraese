@@ -1,17 +1,21 @@
 #include "stateMachine.h"
+#include <stdint.h>
 #include <stdio.h>
 #include "spindleMotor.h"
 #include "data.h"
 #include "globals.h"
 #include "stm32f4xx_hal.h"
 #include "stm32f4xx_hal_gpio.h"
+#include "motion.h"
+#include "config.h"
+#include "stm32f4xx_hal_pwr.h"
+#include "toZero.h"
 
 volatile millingMachine_t millingMachine = {INITIAL,.xpos = 0.0f,.ypos = 0.0f, .zpos = 0.0};
 
 void millingMachineInit(void){
+    Stepper_Init();
     spindleMotorInit();
-    //! initialisierung der linearmotoren für x,y,z achse
-    //! initialisierung der kommunikation mit GUI
 }
 
 
@@ -44,9 +48,6 @@ void checkStateMachine(void){
         case DRILLING:
             drillingAction();
             break;
-        case PAUSED:
-            pausedAction();
-            break;
         case FAIL_SAFE:
             FailSafeAction();
             break;
@@ -55,14 +56,11 @@ void checkStateMachine(void){
 
 
 //! die action funktionen evtl. in files auslagern, dass state machine nicht zu groß wird?
+
 void set_x_Action(void){
-    //TODO: stepper langsam fahren bis interrupt
-    //TODO: wieder xx steps zurück auf defined 0
-    //TODO: position auf 0 setzen
-    HAL_GPIO_WritePin(GPIOD, GPIO_PIN_12, GPIO_PIN_SET); //!grüne LED an für Test
-    HAL_Delay(2000);
-    HAL_GPIO_WritePin(GPIOD, GPIO_PIN_12, GPIO_PIN_RESET);
-    millingMachine.state = SET_Y;
+    toZero_X();                         //auf endanschlag fahren
+    motorX.current_pos = 0;             //Position auf 0 setzen
+    millingMachine.state = SET_Y;       //Weiter mit SET_Y
 }
 
 void set_y_Action(void){
@@ -84,15 +82,14 @@ void set_z_Action(void){
     HAL_Delay(2000);
     HAL_GPIO_WritePin(GPIOD, GPIO_PIN_14, GPIO_PIN_RESET);
     //TODO gui muss länger warten
-    // send_ack();                                                                         //ack an GUI -> config kann starten
+    send_ack();                                                                         //ack an GUI -> config kann starten
 }
 
 void configAction(void){
     if(bewegung !=0){
-        //TODO: z achse bewegen;
+        MoveTo(&motorZ, calculateSteps(bewegung), millingMachine.speed);
         bewegung =0;
-        //TODO gui muss länger warten
-        // send_ack();
+        send_ack();
     }
 }
 
@@ -117,4 +114,11 @@ void FailSafeAction(void){
 }
 
 void readyAction(void){
+    uint32_t speedForSteppers = SPEED_CODE_MM_PER_S_TO_CODE(Vorschub);
+}
+
+
+uint32_t calculateSteps(float mm){
+    //! Viertelschritt
+    return mm*100;
 }

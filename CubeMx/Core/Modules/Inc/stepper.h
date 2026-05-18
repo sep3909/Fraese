@@ -2,6 +2,8 @@
 #define STEPPER_H
 
 #include "main.h" // Enthält die HAL-Bibliothek und Pin-Defines aus CubeMX
+#include <stdint.h>
+#include <sys/_intsup.h>
 
 // Struktur zur Verwaltung eines Motors
 typedef struct {
@@ -12,9 +14,9 @@ typedef struct {
     GPIO_TypeDef* limit_port;
     uint16_t limit_pin;
 
-    volatile long current_pos;   // Aktuelle Position in Schritten
-    volatile long target_pos;    // Zielposition in Schritten
-    volatile int is_moving;      // Status-Flag
+    volatile int32_t current_pos;   // Aktuelle Position in Schritten
+    volatile int32_t target_pos;    // Zielposition in Schritten
+    volatile uint8_t is_moving;      // Status-Flag
     
     // Einfache Geschwindigkeitssteuerung
     volatile uint32_t step_delay;         // Wie viele Timer-Ticks zwischen zwei Schritten warten
