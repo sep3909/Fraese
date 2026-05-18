@@ -87,6 +87,7 @@ void send_next();       //? nächste Form bitte
 
 void send_position(float x, float y, float z);      //? aktuelle Position des Fräsers nur im Milling State aktiv, alle 200ms
 void read_data(uint8_t* buf, uint32_t len);         //? liest Daten aus
+void send_finished();
 
 void send_test(int i);                              //? temporäre Testfunktion
 void send_emergency_stopp();                        //? sendet Not-Stopp

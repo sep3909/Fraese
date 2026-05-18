@@ -53,6 +53,11 @@ void send_next(){
     CDC_Transmit_FS((uint8_t*)reply, strlen(reply));
 }
 
+void send_finished(){
+    char *reply = "e2\n";
+    CDC_Transmit_FS((uint8_t*)reply, strlen(reply));
+}
+
 //?function for sending current position
 void send_position(float x, float y, float z){
     char static reply[64];
