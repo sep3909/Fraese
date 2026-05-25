@@ -18,6 +18,8 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "adc.h"
+#include "dma.h"
 #include "i2c.h"
 #include "i2s.h"
 #include "spi.h"
@@ -96,6 +98,7 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_DMA_Init();
   MX_I2C1_Init();
   MX_I2S3_Init();
   MX_SPI1_Init();
@@ -103,6 +106,7 @@ int main(void)
   MX_TIM9_Init();
   MX_TIM2_Init();
   MX_TIM3_Init();
+  MX_ADC1_Init();
   /* USER CODE BEGIN 2 */
   millingMachineInit(); //init of state machine, initialisiert auch motoren, Kommunikation
   /* USER CODE END 2 */
@@ -112,7 +116,7 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
-    checkStateMachine();
+
     /* USER CODE BEGIN 3 */
 
     }
