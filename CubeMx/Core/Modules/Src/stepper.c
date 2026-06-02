@@ -105,14 +105,12 @@ void Stepper_Update(void) {
             if (m->timer_count >= m->step_delay) {
                 m->timer_count = 0;
 
-                /* * Schritt-Impuls (Pulse) erzeugen:
-                 * Der Treiber braucht eine steigende Flanke
-                 * SET -> RESET erzeugt einen sehr kurzen Peak.
-                 */
+                /* * Schritt-Impuls erzeugen:
+                  Der Treiber braucht eine steigende Flanke */
+
                 HAL_GPIO_WritePin(m->step_port, m->step_pin, GPIO_PIN_SET);
                 
-                // kleiner delay (No Operation) 
-                // 1 __NOP = 1 Taktzyklus
+                // kleiner delay (No Operation)  1 __NOP = 1 Taktzyklus
                 for (volatile int i = 0; i < 100; i++) __NOP(); 
                 
                 HAL_GPIO_WritePin(m->step_port, m->step_pin, GPIO_PIN_RESET);

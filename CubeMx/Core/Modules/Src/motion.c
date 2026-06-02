@@ -76,24 +76,15 @@ void Motion_Rectangle(long x1, long y1, long x2, long y2, uint32_t speed, double
     MoveTo(&motorZ, OFFSET_Z, speed);
 }
 
-void Motion_Circle(long x, long y, uint32_t r, double angle_start_deg, double angle_end_deg, uint32_t speed, double depth) {
-    // Umrechnung von Grad in Bogenmaß
-    double start_rad = angle_start_deg * (M_PI / 180.0);
-    double end_rad   = angle_end_deg   * (M_PI / 180.0);
+void Motion_Circle(long x, long y, uint32_t r, uint32_t speed, double depth) {
+    int segments = 3600;
 
-    // Für Uhrzeigersinn: Wenn end > start, muss die Differenz negativ sein
-    if (end_rad > start_rad) {
-        end_rad -= 2.0 * M_PI; 
-    }
+    double step = (2.0 * M_PI) / segments; // 360° in segments Teile
+    //0.1° Schritte in Bogenmaß umrechnen: 2*PI/360 = PI/180
 
-    int segments = r / 2; 
-    if (segments < 36) segments = 36; // Mindestanzahl für Glätte (Später anpassen falls nötig)
-
-    double step = (end_rad - start_rad) / segments; //zurückgelegter Winkel in rad pro Segment
-
-    // 1. Startpunkt bei 0° (bzw. angle_start) berechnen und anfahren
-    long start_x = x + (long)(r * cos(start_rad));
-    long start_y = y + (long)(r * sin(start_rad));
+    // 1. Startpunkt bei 0° berechnen und anfahren (rechts vom Mittelpunkt)
+    long start_x = x + r;
+    long start_y = y;
     
     MoveTo(&motorX, start_x, speed);
     MoveTo(&motorY, start_y, speed);
@@ -101,11 +92,11 @@ void Motion_Circle(long x, long y, uint32_t r, double angle_start_deg, double an
     // 2. Eintauchen
     MoveTo(&motorZ, -OFFSET_Z + (long)depth, speed);
 
-    // 3. Den Bogen abfahren (Winkel wird pro Schritt kleiner -> Uhrzeigersinn)
+    // 3. Voller Kreis abfahren (von 0° bis 360°)
     for (int i = 1; i <= segments; i++) {
-        double current_angle = start_rad + (i * step);
-        long next_x = x + (long)(r * cos(current_angle));
-        long next_y = y + (long)(r * sin(current_angle));
+        double angle = i * step;
+        long next_x = x + (long)(r * cos(angle));
+        long next_y = y + (long)(r * sin(angle));
         
         Internal_Line(next_x, next_y, speed);
     }
