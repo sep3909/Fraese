@@ -1,5 +1,6 @@
 #include "motion.h"
 #include "stepper.h"
+#include "globals.h"  // für millingMachine.state (Not-Stopp-Abbruch)
 #include <stdlib.h>  // für abs()
 #include <math.h>
 
@@ -8,7 +9,10 @@
 
 void MoveTo(StepperMotor* motor, long target, uint32_t speed) {
     Stepper_SetTarget(motor, target, speed);
-    while (motor->is_moving);  // blockiert bis Ziel erreicht
+    // blockiert bis Ziel erreicht ODER bis Not-Stopp (FAIL_SAFE) ausgelöst wird.
+    // Ohne den FAIL_SAFE-Check würde der busy-wait ewig hängen, weil in FAIL_SAFE
+    // der TIM2-Interrupt Stepper_Update() nicht mehr aufruft -> is_moving bleibt 1.
+    while (motor->is_moving && millingMachine.state != FAIL_SAFE);
 }
 
 
@@ -21,6 +25,7 @@ void Internal_Line(long x_end, long y_end, uint32_t speed) {
     long err = dx - dy;
 
     while (1) {
+        if (millingMachine.state == FAIL_SAFE) break;  // Not-Stopp: Sequenz sofort abbrechen
         if (motorX.current_pos == x_end && motorY.current_pos == y_end) break;
         long e2 = 2 * err;
         if (e2 > -dy) { err -= dy; MoveTo(&motorX, motorX.current_pos + sx, speed); }
