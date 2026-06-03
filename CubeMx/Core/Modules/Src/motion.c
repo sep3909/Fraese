@@ -2,6 +2,7 @@
 #include "stepper.h"
 #include "globals.h"  // für millingMachine.state (Not-Stopp-Abbruch)
 #include <stdlib.h>  // für abs()
+#include "globals.h"
 #include <math.h>
 
 #define OFFSET_Z -250
@@ -9,10 +10,7 @@
 
 void MoveTo(StepperMotor* motor, long target, uint32_t speed) {
     Stepper_SetTarget(motor, target, speed);
-    // blockiert bis Ziel erreicht ODER bis Not-Stopp (FAIL_SAFE) ausgelöst wird.
-    // Ohne den FAIL_SAFE-Check würde der busy-wait ewig hängen, weil in FAIL_SAFE
-    // der TIM2-Interrupt Stepper_Update() nicht mehr aufruft -> is_moving bleibt 1.
-    while (motor->is_moving && millingMachine.state != FAIL_SAFE);
+    while (motor->is_moving && millingMachine.state != FAIL_SAFE);  // blockiert bis Ziel erreicht
 }
 
 
