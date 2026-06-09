@@ -9,12 +9,13 @@
 #include "data.h"
 #include "stdbool.h"
 #include "globals.h"
+#include "stepper.h"
 
 //#include "stepper.h"
 //#include "motion.h"
 
-Shape_t milling_queue[MAX_SHAPES];          //* Array in dem die Fräsdaten gespeichert werden
-uint16_t shape_index = 0;                   //* Wie viele Formen aktuell
+volatile Shape_t milling_queue[MAX_SHAPES];          //* Array in dem die Fräsdaten gespeichert werden
+volatile uint16_t shape_index = 0;                   //* Wie viele Formen aktuell
 
 
 uint8_t event = 0;      //? temporäre variable, wird später nicht mehr benötigt
@@ -23,12 +24,12 @@ uint8_t event = 0;      //? temporäre variable, wird später nicht mehr benöti
 char temp_buffer[128];
 uint8_t temp_index = 0;
 
-float bewegung = 0;         //noch global, später lokal
-char Modus;
-float Drehzahl = 0;      //* Umdrehungen pro Minute
-float Vorschub = 0;
+volatile float bewegung = 0;         //noch global, später lokal
+volatile char Modus;
+volatile float Drehzahl = 0;      //* Umdrehungen pro Minute
+volatile float Vorschub = 0;
 
-uint16_t number_of_shapes = 0;      
+uint16_t volatile number_of_shapes = 0;      
 
 //DataState_t current_data_state = CONFIG;
 
@@ -84,9 +85,12 @@ void read_data(uint8_t* buf, uint32_t len){
 
                 //! Not-Stopp immer aktiv
                 if (strcmp(temp_buffer, "e3") == 0){
-                    //Stepper_StopAll();
                     send_ack();
-                    millingMachine.state = INITIAL;                    
+                    // setzen des flags für state übergang
+                    Stepper_StopAll();
+                    stateTransitionFlag[0] = millingMachine.state;
+                    stateTransitionFlag[1] = INITIAL;
+                    millingMachine.state = INITIAL;
                 }
 
                 else if (millingMachine.state == INITIAL){      //§ INITIAL Modus
@@ -107,13 +111,14 @@ void read_data(uint8_t* buf, uint32_t len){
                     }
                 }
                 else if (millingMachine.state == CONFIG){       //§ CONFIG Modus
-                    //TODO vorrübergehend -> gui wartezeit
                     if(sscanf(temp_buffer, "e10,%f", &bewegung)==1){
-                        send_ack();
                     }
 
                     else if (strcmp(temp_buffer, "e9") == 0){
-                        //todo z-Wert speichern
+                        //* z-Wert speichern
+                        motorZ.current_pos =0; // nullposition auf höhe des Werkstücks festlegen
+                        stateTransitionFlag[0] = CONFIG;
+                        stateTransitionFlag[1] = TRANSFER;
                         send_ack();
                     }
                     else if(sscanf(temp_buffer, "e8,%f,%f", &Drehzahl, &Vorschub) == 2){

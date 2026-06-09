@@ -51,6 +51,8 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     Core/Modules/Src/stepper.c
     Core/Modules/Src/motion.c
     Core/Modules/Src/data.c
+    Core/Modules/Src/toZero.c
+    Core/Modules/Src/temperature.c
 )
 
 # Add include paths

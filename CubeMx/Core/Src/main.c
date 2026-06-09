@@ -18,6 +18,9 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "adc.h"
+#include "config.h"
+#include "dma.h"
 #include "i2c.h"
 #include "i2s.h"
 #include "spi.h"
@@ -27,12 +30,12 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "usbd_cdc_if.h"
 #include "stateMachine.h"
-#include "SpindleMotor.h"
 #include "globals.h"
-#include "data.h"
 #include "stepper.h"
+#include "temperature.h"
+#include "spindleMotor.h"
+#include <stdint.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -96,6 +99,7 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_DMA_Init();
   MX_I2C1_Init();
   MX_I2S3_Init();
   MX_SPI1_Init();
@@ -103,6 +107,7 @@ int main(void)
   MX_TIM9_Init();
   MX_TIM2_Init();
   MX_TIM3_Init();
+  MX_ADC1_Init();
   /* USER CODE BEGIN 2 */
   millingMachineInit(); //init of state machine, initialisiert auch motoren, Kommunikation
   /* USER CODE END 2 */
@@ -111,6 +116,7 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+    checkStateMachine();
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -164,21 +170,37 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
-//* Timer Interrupt Aufruf alle 200ms
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
 
-  //* Timer für Datenübertragung ///////////////////////////////////////////////////////////////////////////
-    if (htim->Instance == TIM3){
+  //* Timerinterrupt alle 200ms ///////////////////////////////////////////////////////////////////////////
+    if (htim->Instance == TIM3){ 
+
+        //* Position der Motoren an GUI schicken
         static float xpos_send = 0;
         static float ypos_send = 0;
         static float zpos_send = 0;
         if (millingMachine.state == MILLING || millingMachine.state == DRILLING){
+          //todo use steps2mm fct !!data types!!!
             xpos_send = motorX.current_pos/100;
             ypos_send = motorY.current_pos/100;
             zpos_send = motorZ.current_pos/100;
-            //* nur wenn gerade gefräst wird, werden Daten gesendet
+            // nur wenn gerade gefräst wird, werden Daten gesendet
             send_position(xpos_send, ypos_send, zpos_send);
-        }         
+
+        } 
+
+        //* Überprüfen der Temperatur der Elektronik, ggf. Lüfter einschalten
+        temp_messung();   
+
+        //* Zähler zum Hochfahren des Spindelmotors
+        static uint8_t spindleMotorCnt = 0;
+        if(spindleMotor.state == STARTING){
+          spindleMotorCnt ++;
+          if(spindleMotorCnt == spindleMotor_startingTime*5){   // 200ms Interruptfrequenz
+            spindleMotor.state = RUNNING;
+            spindleMotorCnt = 0;
+          }
+        }
     }
 
     //* Timer für Linearmotoren  /////////////////////////////////////////////////////////////////////////////
