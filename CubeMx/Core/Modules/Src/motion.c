@@ -5,8 +5,9 @@
 #include <stdlib.h>  // für abs()
 #include "globals.h"
 #include <math.h>
+#include "spindleMotor.h"
 
-#define OFFSET_Z -250
+#define OFFSET_Z 250
 #define SPEED_Z 10
 
 void MoveTo(StepperMotor* motor, long target, uint32_t speed) {
@@ -15,11 +16,18 @@ void MoveTo(StepperMotor* motor, long target, uint32_t speed) {
     // Ohne den FAIL_SAFE-Check würde der busy-wait ewig hängen, weil in FAIL_SAFE
     // der TIM2-Interrupt Stepper_Update() nicht mehr aufruft -> is_moving bleibt 1.
     // blockiert bis Ziel erreicht
+    // bei OVERHEAT bleibt man in der Schleife, dass nach Abkühlen weitergefräst werden kann
     while ( motor->is_moving && 
             millingMachine.state != FAIL_SAFE   &&
             millingMachine.state != READY       &&
             millingMachine.state != TRANSFER    &&
-            millingMachine.state != INITIAL);  
+            millingMachine.state != INITIAL){
+                // nach overheat muss spindlemotor hier wieder gestartet werdens
+                if(startSpindleMotorAfterOverheatFlag){
+                    spindleMotorStart();
+                    startSpindleMotorAfterOverheatFlag = false;
+                }
+            };
 }
 
 

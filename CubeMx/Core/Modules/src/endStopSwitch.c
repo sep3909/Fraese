@@ -1,3 +1,4 @@
+#include "main.h"
 #include "stepper.h"
 #include "stm32f407xx.h"
 #include "stm32f4xx_hal_gpio.h"
@@ -6,6 +7,7 @@
 #include "globals.h"
 #include "stdbool.h"
 #include "stepper.h"
+#include <stdint.h>
 
 // -------------------------------------------------------------------------------------
 // Interrupthandler für Endanschlagschalter
@@ -15,10 +17,12 @@
 // -------------------------------------------------------------------------------------
 
 bool end_reached = false;           // Flagvariable für SET_X/Y/Z
+bool volatile startSpindleMotorAfterOverheatFlag = false;
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
     
     if (GPIO_Pin == endStopSwitch_Pin) { //* Überprüfen, ob die Unterbrechung vom Stoppschalter kommt
+
         if (millingMachine.state == MILLING || millingMachine.state == DRILLING){
             // //todo send message to GUI
             // //todo hier motor ausschalten sleep pins, dass kein haltemoment
@@ -39,5 +43,22 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
         if(millingMachine.state == SET_X || millingMachine.state == SET_Y || millingMachine.state == SET_Z){
             end_reached = true;
         }
+    }
+    else if (GPIO_Pin == Motors_fault_Pin) {
+        static volatile uint8_t faultState = 1;
+        static volatile uint8_t faultStateOld = 1;
+        static SpindleMotorState_Enum stateBeforeOverheat = INITIAL;
+        faultState = (GPIOC->IDR << 6) & 1;
+
+        if(!faultState && faultStateOld){               // falling flank --> overheat
+            stateBeforeOverheat = millingMachine.state;
+            millingMachine.state = OVERHEATED;          // state auf overheated setzen
+            spindleMotorStop();                         // spindelmotor stoppen
+        }
+        else if (faultState && !faultStateOld) {        // rising flank --> wieder in Betrieb
+            millingMachine.state = stateBeforeOverheat; // wieder zu altem State zurückkehren
+            startSpindleMotorAfterOverheatFlag = true;
+        }
+        faultStateOld = faultState;
     }
 }

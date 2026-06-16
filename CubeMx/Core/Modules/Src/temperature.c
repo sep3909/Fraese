@@ -17,6 +17,7 @@
 volatile uint16_t adc_values[4];    //$ alle vier Tempsensoren werden in dem Array gespeichert bzw. deren Werte
 float v_ntc[4];                     //% Array mit allen Temp. Werten
 bool Lüfter_an = false;
+float volatile temp = 0;
 
 void temp_init(void){
     MX_DMA_Init();
@@ -41,7 +42,7 @@ void temp_messung(void){
     }
 
     float R_NTC = R_1 * (v_highest/(V_ref - v_highest));
-    float temp = 1.0f / (((1.0f/T_N) + (1.0f/B) * logf(R_NTC/R_N)));
+    temp = 1.0f / (((1.0f/T_N) + (1.0f/B) * logf(R_NTC/R_N)));
 
     if (temp >= 330 && Lüfter_an == false){
         Lüfter_an = true;

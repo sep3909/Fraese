@@ -1,5 +1,6 @@
 #ifndef STATEMACHINE_H
 #define STATEMACHINE_H
+#include "stateMachine.h"
 #include <stdint.h>
 
 // states for state Machine
@@ -8,12 +9,13 @@ typedef enum {
     SET_X,                  // x Achse auf 0 fahren
     SET_Y,                  // y Achse auf 0 fahren
     SET_Z,                  // z Achse auf 0 fahren
-    CONFIG,                 //konfiguration der z achse und spindle speed
-    TRANSFER,               //Daten werden übertragen
-    READY,                   // ready to work, befehle empfangen
-    MILLING,                //während der fräsens
-    DRILLING,               //während des bohrens
-    FAIL_SAFE,               // Betätigung des Endanschlages während MILLING/DRILLING
+    CONFIG,                 // konfiguration der z achse und spindle speed
+    TRANSFER,               // Daten werden übertragen
+    READY,                  // ready to work, befehle empfangen
+    MILLING,                // während der fräsens
+    DRILLING,               // während des bohrens
+    FAIL_SAFE,              // Betätigung des Endanschlages während MILLING/DRILLING
+    OVERHEATED,             // overheated
     FINISHED
 } millingMachineStates_Enum;
 
@@ -36,6 +38,7 @@ void millingAction(void);
 void drillingAction(void);
 void pausedAction(void);
 void FailSafeAction(void);
+void overheatedAction();
 
 long mm2steps(float mm);
 float steps2mm(long steps);

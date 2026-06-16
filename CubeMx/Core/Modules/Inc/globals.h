@@ -1,5 +1,6 @@
 #include "data.h"
 #include "stateMachine.h"
+#include <stdbool.h>
 
 extern volatile millingMachine_t millingMachine;    // globale Variable für den Zustand der Fräse, damit in allen files zugreifbar
 extern volatile float bewegung;                              // Bewegung der z Achse während dem Ankratzen
@@ -10,3 +11,6 @@ extern volatile Shape_t milling_queue[MAX_SHAPES];           //Fräsbefehle
 extern volatile uint16_t number_of_shapes;                   // Anzahl der Fräsbefehle
 
 extern volatile millingMachineStates_Enum stateTransitionFlag[2];
+extern volatile bool startSpindleMotorAfterOverheatFlag;
+
+extern volatile float temp;                                 // variable für Temperatur der Treiber (max)

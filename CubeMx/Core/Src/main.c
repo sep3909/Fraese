@@ -19,7 +19,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "adc.h"
-#include "config.h"
+#include "data.h"
 #include "dma.h"
 #include "i2c.h"
 #include "i2s.h"
@@ -36,6 +36,7 @@
 #include "temperature.h"
 #include "spindleMotor.h"
 #include <stdint.h>
+#include "config.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -175,22 +176,26 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
   //* Timerinterrupt alle 200ms ///////////////////////////////////////////////////////////////////////////
     if (htim->Instance == TIM3){ 
 
+        //* Überprüfen der Temperatur der Elektronik, ggf. Lüfter einschalten
+        temp_messung();
+
         //* Position der Motoren an GUI schicken
         static float xpos_send = 0;
         static float ypos_send = 0;
         static float zpos_send = 0;
         if (millingMachine.state == MILLING || millingMachine.state == DRILLING){
-          //todo use steps2mm fct !!data types!!!
-            xpos_send = motorX.current_pos/100;
-            ypos_send = motorY.current_pos/100;
-            zpos_send = motorZ.current_pos/100;
+            xpos_send = abs(steps2mm(motorX.current_pos));
+            ypos_send = abs(steps2mm(motorY.current_pos));
+            zpos_send = abs(steps2mm(motorZ.current_pos));
             // nur wenn gerade gefräst wird, werden Daten gesendet
-            send_position(xpos_send, ypos_send, zpos_send);
+            send_position(xpos_send, ypos_send, zpos_send, temp);
+        }
+        else if(millingMachine.state == OVERHEATED){
+          // wenn faul pin ==0 -> overheated 999
+          send_position(xpos_send, ypos_send, zpos_send, 999.0f);
+        }
 
-        } 
-
-        //* Überprüfen der Temperatur der Elektronik, ggf. Lüfter einschalten
-        temp_messung();   
+   
 
         //* Zähler zum Hochfahren des Spindelmotors
         static uint8_t spindleMotorCnt = 0;
@@ -207,10 +212,11 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
      // Stepper läuft über Timer-Interrupt.
     if (htim->Instance == TIM2) {
       // Stepper werden nur geupdated, wenn nicht in folgenden States
-      if (millingMachine.state != READY &&        
+      if (millingMachine.state != READY     &&        
           millingMachine.state != FAIL_SAFE && 
-          millingMachine.state != TRANSFER &&
-          millingMachine.state != INITIAL){
+          millingMachine.state != TRANSFER  &&
+          millingMachine.state != INITIAL   &&
+          millingMachine.state != OVERHEATED){
         Stepper_Update();
       }
       

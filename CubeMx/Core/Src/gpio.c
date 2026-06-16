@@ -55,31 +55,26 @@ void MX_GPIO_Init(void)
   __HAL_RCC_GPIOD_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOE, CS_I2C_SPI_Pin|H_Bridge_DIR_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOE, CS_I2C_SPI_Pin|H_Bridge_DIR_Pin|Stepper_M0_Pin|Stepper_M1_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(OTG_FS_PowerSwitchOn_GPIO_Port, OTG_FS_PowerSwitchOn_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, Cooler_On_Off_Pin|MOTORS_ENABLE_Pin|Z_STEP_Pin|Z_DIR_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOB, Cooler_On_Off_Pin|Stepper_M2_Pin|Motors_rst_Pin|MOTORS_ENABLE_Pin
+                          |Z_STEP_Pin|Z_DIR_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOD, X_STEP_Pin|X_DIR_Pin|Y_STEP_Pin|Y_DIR_Pin
                           |LD4_Pin|LD3_Pin|LD5_Pin|LD6_Pin
                           |Audio_RST_Pin, GPIO_PIN_RESET);
 
-  /*Configure GPIO pins : CS_I2C_SPI_Pin H_Bridge_DIR_Pin */
-  GPIO_InitStruct.Pin = CS_I2C_SPI_Pin|H_Bridge_DIR_Pin;
+  /*Configure GPIO pins : CS_I2C_SPI_Pin H_Bridge_DIR_Pin Stepper_M0_Pin Stepper_M1_Pin */
+  GPIO_InitStruct.Pin = CS_I2C_SPI_Pin|H_Bridge_DIR_Pin|Stepper_M0_Pin|Stepper_M1_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
-
-  /*Configure GPIO pin : endStopSwitch_Pin */
-  GPIO_InitStruct.Pin = endStopSwitch_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
-  GPIO_InitStruct.Pull = GPIO_PULLUP;
-  HAL_GPIO_Init(endStopSwitch_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : OTG_FS_PowerSwitchOn_Pin */
   GPIO_InitStruct.Pin = OTG_FS_PowerSwitchOn_Pin;
@@ -96,14 +91,10 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Alternate = GPIO_AF5_SPI2;
   HAL_GPIO_Init(PDM_OUT_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : B1_Pin */
-  GPIO_InitStruct.Pin = B1_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_EVT_RISING;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(B1_GPIO_Port, &GPIO_InitStruct);
-
-  /*Configure GPIO pins : Cooler_On_Off_Pin MOTORS_ENABLE_Pin Z_STEP_Pin Z_DIR_Pin */
-  GPIO_InitStruct.Pin = Cooler_On_Off_Pin|MOTORS_ENABLE_Pin|Z_STEP_Pin|Z_DIR_Pin;
+  /*Configure GPIO pins : Cooler_On_Off_Pin Stepper_M2_Pin Motors_rst_Pin MOTORS_ENABLE_Pin
+                           Z_STEP_Pin Z_DIR_Pin */
+  GPIO_InitStruct.Pin = Cooler_On_Off_Pin|Stepper_M2_Pin|Motors_rst_Pin|MOTORS_ENABLE_Pin
+                          |Z_STEP_Pin|Z_DIR_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -134,6 +125,18 @@ void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 
+  /*Configure GPIO pin : Motors_fault_Pin */
+  GPIO_InitStruct.Pin = Motors_fault_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING_FALLING;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  HAL_GPIO_Init(Motors_fault_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : endStopSwitch_Pin */
+  GPIO_InitStruct.Pin = endStopSwitch_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  HAL_GPIO_Init(endStopSwitch_GPIO_Port, &GPIO_InitStruct);
+
   /*Configure GPIO pin : OTG_FS_OverCurrent_Pin */
   GPIO_InitStruct.Pin = OTG_FS_OverCurrent_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
@@ -147,6 +150,9 @@ void MX_GPIO_Init(void)
   HAL_GPIO_Init(MEMS_INT2_GPIO_Port, &GPIO_InitStruct);
 
   /* EXTI interrupt init*/
+  HAL_NVIC_SetPriority(EXTI0_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(EXTI0_IRQn);
+
   HAL_NVIC_SetPriority(EXTI9_5_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
 

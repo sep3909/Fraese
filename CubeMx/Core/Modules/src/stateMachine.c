@@ -36,37 +36,40 @@ void checkStateMachine(void){
     }
     
     // Prüfen des states, entsprechende Aktion ausführen
-    switch(millingMachine.state){
+     switch(millingMachine.state){
         case INITIAL:
             initialAction();
-            break;
+        break;
         case SET_X:
             set_x_Action();
-            break;
+        break;
         case SET_Y:
             set_y_Action();
-            break;
+        break;
         case SET_Z:
             set_z_Action();
-            break;
+        break;
         case CONFIG:
             configAction();
-            break;
+        break;
         case TRANSFER:
             transferAction();
-            break;
+        break;
         case READY:
             readyAction();
-            break;
+        break;
         case MILLING:
             millingAction();
-            break;
+        break;
         case DRILLING:
             drillingAction();
-            break;
+        break;
         case FAIL_SAFE:
             FailSafeAction();
-            break;
+        break;
+        case OVERHEATED:
+            overheatedAction();
+        break;
         case FINISHED:
         break;
     }
@@ -146,10 +149,14 @@ void FailSafeAction(void){
 }
 
 void readyAction(void){
-    // vorschub in geegnete Form für Stepperansteuerung umrechnen
-    millingMachine.speedForSteppers = SPEED_CODE_MM_PER_S_TO_CODE(Vorschub);
+    // vorschub in geegnete Form für Stepperansteuerung umrechnen ,ist in mm/min angegeben
+    millingMachine.speedForSteppers = SPEED_CODE_MM_PER_S_TO_CODE(Vorschub/60);
     //todo hier kennlinie einpflegn!
     H_Bridge_set_DutyCycle(50);
+}
+
+void overheatedAction(void){
+    spindleMotorStop();
 }
 
 void nextShape(uint16_t idx){
@@ -251,7 +258,7 @@ void stateTransition(millingMachineStates_Enum oldState, millingMachineStates_En
     //* Aktion für Übergang von CONFIG -> TRANSFER
     //* Ausschalten des Spindelmotors
     if(oldState == CONFIG && newState == TRANSFER){
-        MoveTo(&motorZ, OFFSET_Z, stepperConfigSpeed);
+        MoveTo(&motorZ, -OFFSET_Z, stepperConfigSpeed);
         spindleMotorStop();
     }
 

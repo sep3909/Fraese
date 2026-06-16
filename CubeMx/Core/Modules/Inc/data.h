@@ -85,7 +85,7 @@ void send_ack();        //? Datenpaket i.O.
 void send_nack();       //? Datenpaket n.i.O.
 void send_next();       //? nächste Form bitte
 
-void send_position(float x, float y, float z);      //? aktuelle Position des Fräsers nur im Milling State aktiv, alle 200ms
+void send_position(float x, float y, float z ,float temp);      //? aktuelle Position des Fräsers nur im Milling State aktiv, alle 200ms
 void read_data(uint8_t* buf, uint32_t len);         //? liest Daten aus
 void send_finished();
 

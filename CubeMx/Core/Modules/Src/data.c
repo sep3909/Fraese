@@ -60,9 +60,9 @@ void send_finished(){
 }
 
 //?function for sending current position
-void send_position(float x, float y, float z){
+void send_position(float x, float y, float z, float temp){
     char static reply[64];
-    sprintf(reply, "e5,%.2f,%.2f,%.2f\n", x,y,z);          //Converting Numbers to String
+    sprintf(reply, "e5,%.2f,%.2f,%.2f,%.2f\n", x,y,z, temp);          //Converting Numbers to String
     CDC_Transmit_FS((uint8_t*)reply, strlen(reply));
 }
 
