@@ -1,4 +1,5 @@
 #include "motion.h"
+#include "config.h"
 #include "stateMachine.h"
 #include "stepper.h"
 #include "globals.h"  // für millingMachine.state (Not-Stopp-Abbruch)
@@ -50,22 +51,23 @@ void Internal_Line(long x_end, long y_end, uint32_t speed) {
 
 
 // Die öffentliche Linienfunktion --> steuert Z
-void Motion_Line(long x_start, long y_start, long x_end, long y_end, uint32_t speed, double depth) {
-    MoveTo(&motorX, x_start, speed);
-    MoveTo(&motorY, y_start, speed);
+void Motion_Line(long x_start, long y_start, long x_end, long y_end, uint32_t speed, long depth) {
+    MoveTo(&motorX, x_start, stepperConfigSpeed);
+    MoveTo(&motorY, y_start, stepperConfigSpeed);
     
-    MoveTo(&motorZ, -OFFSET_Z + (long)depth, speed); // Bohrer runterfahren
+    // MoveTo(&motorZ, -OFFSET_Z + (long)depth, speed); // Bohrer runterfahren
+    MoveTo(&motorZ, depth, speed); // Bohrer runterfahren
     Internal_Line(x_end, y_end, speed);
     MoveTo(&motorZ, OFFSET_Z, speed); //Bohrer hochfahren
 }
 
-void Motion_Triangle(long x1, long y1, long x2, long y2, long x3, long y3, uint32_t speed, double depth) {
+void Motion_Triangle(long x1, long y1, long x2, long y2, long x3, long y3, uint32_t speed, long depth) {
     // 1. Startposition (erster Punkt) anfahren
-    MoveTo(&motorX, x1, speed);
-    MoveTo(&motorY, y1, speed);
+    MoveTo(&motorX, x1, stepperConfigSpeed);
+    MoveTo(&motorY, y1, stepperConfigSpeed);
 
     // 2. Bohrer absenken
-    MoveTo(&motorZ, -OFFSET_Z + (long)depth, speed);
+    MoveTo(&motorZ, depth, speed);
 
     // 3. Die drei Kanten abfahren
     Internal_Line(x2, y2, speed); // P1 -> P2
@@ -76,15 +78,15 @@ void Motion_Triangle(long x1, long y1, long x2, long y2, long x3, long y3, uint3
     MoveTo(&motorZ, OFFSET_Z, speed);
 }
 
-void Motion_Rectangle(long x1, long y1, long x2, long y2, uint32_t speed, double depth) {
+void Motion_Rectangle(long x1, long y1, long x2, long y2, uint32_t speed, long depth) {
                   /* Koordinatenangabe in UntenLinks, ObenRechts*/
 
     // 1. Startposition anfahren
-    MoveTo(&motorX, x1, speed);
-    MoveTo(&motorY, y1, speed);
+    MoveTo(&motorX, x1, stepperConfigSpeed);
+    MoveTo(&motorY, y1, stepperConfigSpeed);
     
     // 2. Eintauchen
-    MoveTo(&motorZ, -OFFSET_Z + (long)depth, speed);
+    MoveTo(&motorZ, depth, speed);
 
     // 3. Die vier Seiten abfahren
     Internal_Line(x2, y1, speed); // Rechts
@@ -96,7 +98,7 @@ void Motion_Rectangle(long x1, long y1, long x2, long y2, uint32_t speed, double
     MoveTo(&motorZ, OFFSET_Z, speed);
 }
 
-void Motion_Circle(long x, long y, uint32_t r, uint32_t speed, double depth) {
+void Motion_Circle(long x, long y, uint32_t r, uint32_t speed, long depth) {
     int segments = 3600;
 
     double step = (2.0 * M_PI) / segments; // 360° in segments Teile
@@ -106,11 +108,12 @@ void Motion_Circle(long x, long y, uint32_t r, uint32_t speed, double depth) {
     long start_x = x + r;
     long start_y = y;
     
-    MoveTo(&motorX, start_x, speed);
-    MoveTo(&motorY, start_y, speed);
+    // Hinfahren zur Position ist schneller
+    MoveTo(&motorX, start_x, stepperConfigSpeed);
+    MoveTo(&motorY, start_y, stepperConfigSpeed);
 
     // 2. Eintauchen
-    MoveTo(&motorZ, -OFFSET_Z + (long)depth, speed);
+    MoveTo(&motorZ, depth, speed);
 
     // 3. Voller Kreis abfahren (von 0° bis 360°)
     for (int i = 1; i <= segments; i++) {

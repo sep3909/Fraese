@@ -1,5 +1,7 @@
 #include "stepper.h"
-
+#include "main.h"
+#include "stm32f4xx_hal_gpio.h"
+#include "config.h"
 
 /* * 1. Instanzen der Motoren definieren
  * Diese Variablen speichern den aktuellen Zustand (Position, Ziel, Pins)
@@ -49,6 +51,11 @@ void Stepper_Init(void) {
     motorZ.target_pos   = 0;
     motorZ.is_moving    = 0;
     motorZ.timer_count  = 0;
+
+    HAL_GPIO_WritePin(Stepper_M0_GPIO_Port, Stepper_M0_Pin, steppersM0);
+    HAL_GPIO_WritePin(Stepper_M1_GPIO_Port, Stepper_M1_Pin, steppersM1);
+    HAL_GPIO_WritePin(Stepper_M2_GPIO_Port, Stepper_M2_Pin, steppersM2);
+    HAL_GPIO_WritePin(Motors_rst_GPIO_Port, Motors_rst_Pin, GPIO_PIN_SET);
 }
 
 /**

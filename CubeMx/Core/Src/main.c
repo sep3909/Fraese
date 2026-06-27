@@ -19,7 +19,6 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "adc.h"
-#include "data.h"
 #include "dma.h"
 #include "i2c.h"
 #include "i2s.h"
@@ -117,7 +116,7 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    checkStateMachine();
+    updateStateMachine();
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -184,9 +183,9 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
         static float ypos_send = 0;
         static float zpos_send = 0;
         if (millingMachine.state == MILLING || millingMachine.state == DRILLING){
-            xpos_send = abs(steps2mm(motorX.current_pos));
-            ypos_send = abs(steps2mm(motorY.current_pos));
-            zpos_send = abs(steps2mm(motorZ.current_pos));
+            xpos_send = steps2mm(motorX.current_pos);
+            ypos_send = -steps2mm(motorY.current_pos);
+            zpos_send = steps2mm(motorZ.current_pos);
             // nur wenn gerade gefräst wird, werden Daten gesendet
             send_position(xpos_send, ypos_send, zpos_send, temp);
         }

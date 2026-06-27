@@ -98,12 +98,12 @@ void read_data(uint8_t* buf, uint32_t len){
                         if (Modus == 'b'){
                             //TODO vorrübergehend -> gui wartezeit
                             // send_ack();
-                            millingMachine.state = SET_X;
+                            millingMachine.state = SET_Z;
                         }
                         else if (Modus == 'f'){
                             //TODO vorrübergehend -> gui wartezeit
                             //send_ack();
-                            millingMachine.state = SET_X;
+                            millingMachine.state = SET_Z;
                         }
                         else {
                             send_nack();
@@ -165,7 +165,7 @@ void read_data(uint8_t* buf, uint32_t len){
                        }
 
                        //* Dreieck
-                       else if(sscanf(temp_buffer, "dreieck,%f,%f,%f,%f,%f,%f,%f", &t, &x1, &y1, &x2, &y2, &x3, &y3) == 7){
+                       else if(sscanf(temp_buffer, "dreieck,%f,%f,%f,%f,%f,%f,%f", &x1, &y1, &x2, &y2, &x3, &y3, &t) == 7){
                         milling_queue[shape_index].type = DREIECK;
                         milling_queue[shape_index].t = t;
                         milling_queue[shape_index].geo.dreieck.x1 = x1;

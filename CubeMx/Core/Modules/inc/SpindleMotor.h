@@ -6,14 +6,25 @@
 
 
 
-// enum für states des Motors
+/*-----------------------------------------------------------------------------------------
+enum für die Motorzustände
+    IDLE: Motor im Stillstand
+    RUNNING: Motor läuft
+    STARTING: Motor ist im Anlauf
+-----------------------------------------------------------------------------------------*/
 typedef enum{
     RUNNING,
     IDLE,
     STARTING
 }SpindleMotorState_Enum;
 
-// struct zum abspeichern der Zustände
+/*-----------------------------------------------------------------------------------------
+strcut zum speichern der Motorzustände
+    direction: Drehrichtung, initial:0 (vorwärts)
+    dutyCycle: Dutycycle der PWM, initial: 0
+    dutyCycleForTIm: umgerechneter compare Wert für den Timer->PWM
+    state: status des Motors, initial:IDLE
+-----------------------------------------------------------------------------------------*/
 typedef struct SpindleMotor_Struct{
     uint8_t direction;                          // 0: Vorwärts, 1: Rückwärts
     uint8_t dutyCycle;                          // 0-100%
@@ -23,24 +34,37 @@ typedef struct SpindleMotor_Struct{
 
 extern SpindleMotor_Struct spindleMotor;
 
-// Init Function für H Brücke
-// setzt die Drehrichtung auf Vorwärts und den Duty Cycle auf 0%
+/*-----------------------------------------------------------------------------------------
+Init Function für H Brücke, setzt default values, setzt pins
+direction, dutycyle, werden in der initialisierung gesetzt
+    Vorwärtsrichtung
+    Timer Starten
+    initial state = IDLE
+    dutyCycle =0
+-----------------------------------------------------------------------------------------*/
 void spindleMotorInit(void);
 
-// Funktion zum Setzen des Duty Cycles (0-100%)
-// bekommt Wert zwischen 0 und 100, wird sofort angewendet, wenn RUNNING
-void H_Bridge_set_DutyCycle(uint8_t duty);
+/*-----------------------------------------------------------------------------------------
+Setzt den dutCylce und dutyCYlceForTim
+//!Wird sofort angewendet
+-----------------------------------------------------------------------------------------*/
+void hBridgeSetDutyCycle(uint8_t duty);
 
-// Funktion zum Setzen der Drehrichtung
-// direction = 0: Vorwärts, direction ~= 0: Rückwärts
-//! neue Drehrichtung wird im Motorzustand gespeichert, aber erst mit spindleMotorStart() aktiv
-//! Motor muss erst gestoppt werden, damit die neue Drehrichtung aktiv wird
+/*-----------------------------------------------------------------------------------------
+Setzt direction --> direction = 0: Vorwärts, direction ~= 0: Rückwärts
+//! Wird erst mit SpindleMotorStart() angewendet
+-----------------------------------------------------------------------------------------*/
 void spindleMotorSetDirection(uint8_t direction);
 
-// Funktion zum Stoppen des Motors (Duty Cycle = 0%)
+/*-----------------------------------------------------------------------------------------
+Stoppt Motor
+-----------------------------------------------------------------------------------------*/
 void spindleMotorStop(void);
 
-// Funktion zum Starten des Motors mit aktuellem Duty Cycle und Richtung
+/*-----------------------------------------------------------------------------------------
+Startet Motor mit aktueller richtung, dutycycle
+Wartet für "spindleMotorStartingTime" (config.h) Sekunden, bis weitere Aktion möglich
+-----------------------------------------------------------------------------------------*/
 void spindleMotorStart(void);
 
 #endif // SPINDLEMOTOR_H

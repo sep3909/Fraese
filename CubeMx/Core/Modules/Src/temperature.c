@@ -9,7 +9,7 @@
 
 #define T_N 300.0f
 #define R_1 10000.0f
-#define R_N 7000.0f
+#define R_N 7000. //TODO
 #define V_ref 3.2f
 #define B 4000.0f
 

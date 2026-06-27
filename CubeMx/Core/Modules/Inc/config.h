@@ -9,13 +9,17 @@
 #define STEPS_PER_REV 200                                       // steps per Umdrehung
 #define MM_PER_STEP (PITCH_MM / (STEPS_PER_REV * MICROSTEPS))   
 
+#define steppersM0 0                                            //M0 der Stepper 
+#define steppersM1 1                                            //M1 der Stepper
+#define steppersM2 0                                            //M2 der Stepper
+
 // #define TIM_UPDATE_HZ ((uint32_t)10000)
 #define TIM_UPDATE_HZ ((uint32_t)10000)                         // tim frequenz für update funktion
 #define SPEED_CODE_MM_PER_S_TO_CODE(mm_per_s) ((uint32_t)((TIM_UPDATE_HZ * PITCH_MM) / (STEPS_PER_REV * MICROSTEPS * (mm_per_s)))) // speed (mm/s) -> speed for steppers
 
-#define stepperConfigSpeed SPEED_CODE_MM_PER_S_TO_CODE(8)       // speed für die stepper während config
-#define offsetToZeroX 20   // offset von X-Endanschlag
-#define offsetToZeroY 20   // offset von Y-Endanschlag
+#define stepperConfigSpeed SPEED_CODE_MM_PER_S_TO_CODE(15)       // speed für die stepper während config
+#define offsetToZeroX 3   // offset von X-Endanschlag
+#define offsetToZeroY 143   // offset von Y-Endanschlag
 #define offsetToZeroZ 10   // offset von Z-Endanschlag
 
 #define OFFSET_Z -250       // offset, den das Werkzeug beim Positionieren über der Werkstückoberfläche hat
@@ -23,6 +27,6 @@
 //*   ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 //! muss ein Vielfaches von 200ms sein
-#define spindleMotor_startingTime 2    // Zeit [s], die der Spindelmotor zum Hochlaufen benötigt
+#define spindleMotor_startingTime 5    // Zeit [s], die der Spindelmotor zum Hochlaufen benötigt
 
 #endif

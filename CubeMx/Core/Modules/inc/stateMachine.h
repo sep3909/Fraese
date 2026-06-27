@@ -26,7 +26,7 @@ typedef struct millingMachine_t{
 } millingMachine_t;
 
 void millingMachineInit(void);
-void checkStateMachine(void);
+void updateStateMachine(void);
 void initialAction(void);
 void set_x_Action(void);
 void set_y_Action(void);
@@ -41,7 +41,7 @@ void FailSafeAction(void);
 void overheatedAction();
 
 long mm2steps(float mm);
-float steps2mm(long steps);
+float steps2mm(int32_t steps);
 
 void nextShape(uint16_t idx);
 void nextHole(uint16_t idx);

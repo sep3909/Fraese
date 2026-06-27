@@ -9,7 +9,7 @@
 #include "spindleMotor.h"
 
 // initiale Zustände: Drehrichtung = Vorwärts, Duty Cycle = 0%, Motor aus
-SpindleMotor_Struct spindleMotor = {0, 0, 0, IDLE}; 
+SpindleMotor_Struct spindleMotor = {0, 0, 0, IDLE};
 
 void spindleMotorInit(void)
 {
@@ -23,7 +23,7 @@ void spindleMotorInit(void)
     spindleMotor.state = IDLE;
 }
 
-void H_Bridge_set_DutyCycle(uint8_t duty)
+void hBridgeSetDutyCycle(uint8_t duty)
 {
     // maximal 100 prozent möglich
     if (duty > 100) duty = 100;
@@ -47,7 +47,6 @@ void spindleMotorSetDirection(uint8_t direction)
 }
 
 
-//todo delay hinzufügen, bis motor hochgefahren ists
 void spindleMotorStart(void){
     if (spindleMotor.state == IDLE){
         // Pin für Richtung setzen
