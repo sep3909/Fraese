@@ -27,6 +27,6 @@
 //*   ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 //! muss ein Vielfaches von 200ms sein
-#define spindleMotor_startingTime 5    // Zeit [s], die der Spindelmotor zum Hochlaufen benötigt
+#define spindleMotor_startingTime 2    // Zeit [s], die der Spindelmotor zum Hochlaufen benötigt
 
 #endif

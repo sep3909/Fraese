@@ -60,9 +60,12 @@ void updateStateMachine(void){
         case FAIL_SAFE:
             FailSafeAction();
         break;
-        case OVERHEATED:
-            overheatedAction();
+        case PAUSED:
+            pausedAction();
         break;
+        // case OVERHEATED:
+        //     overheatedAction();
+        // break;
         case FINISHED:
         break;
     }
@@ -70,6 +73,8 @@ void updateStateMachine(void){
 
 void initialAction(void){
     // no Action yet
+    //todo in state Transistion
+    millingMachine.currentShapeIdx =0;
 } 
 
 void set_x_Action(void){
@@ -126,6 +131,7 @@ void drillingAction(void){
     }
     else{
         spindleMotorStop();
+        HAL_Delay(10);
         send_finished();
         millingMachine.state = FINISHED;
     }
@@ -248,36 +254,37 @@ void stateTransition(millingMachineStates_Enum oldState, millingMachineStates_En
     //* MILLING -> INITIAL
     //* DRILLING -> INITIAL
     if((oldState == MILLING || oldState == DRILLING) && newState == INITIAL){
+        stateTransitionFlag[0]  = stateTransitionFlag[1];
+        MoveTo(&motorZ, -OFFSET_Z, millingMachine.speedForSteppers);
         spindleMotorStop();
         //todo auf 0,0,0 zurückfahren??
-        stateTransitionFlag[0]  = stateTransitionFlag[1];
         return;
     }
 
     //* Aktion für Übergang von CONFIG -> TRANSFER
     //* Ausschalten des Spindelmotors
     if(oldState == CONFIG && newState == TRANSFER){
+        stateTransitionFlag[0]  = stateTransitionFlag[1];
         MoveTo(&motorZ, -OFFSET_Z, stepperConfigSpeed);
         // spindleMotorStop();
-        stateTransitionFlag[0]  = stateTransitionFlag[1];
         return;
     }
 
-    //* Aktion für Pause -> z achse hochfahren und Spindelmotor stoppen
-    if((oldState == MILLING || oldState == DRILLING) && newState ==READY){
-        MoveTo(&motorZ, -OFFSET_Z, millingMachine.speedForSteppers);
-        spindleMotorStop();
-        stateTransitionFlag[0]  = stateTransitionFlag[1];
-        return;
-    }
+    // //* Aktion für Pause -> z achse hochfahren und Spindelmotor stoppen
+    // if((oldState == MILLING || oldState == DRILLING) && newState ==READY){
+    //     MoveTo(&motorZ, -OFFSET_Z, millingMachine.speedForSteppers);
+    //     spindleMotorStop();
+    //     stateTransitionFlag[0]  = stateTransitionFlag[1];
+    //     return;
+    // }
 
-    //* Aktion für pause -> drilling/milling: spindelMotor starten, ins werkstück einfahren
-    if(oldState == READY && (newState == DRILLING || newState == MILLING)){
-        spindleMotorStart();
-        MoveTo(&motorZ, mm2steps(milling_queue[millingMachine.currentShapeIdx].t) , millingMachine.speedForSteppers);
-        stateTransitionFlag[0]  = stateTransitionFlag[1];
-        return;
-    }
+    // //* Aktion für pause -> drilling/milling: spindelMotor starten, ins werkstück einfahren
+    // if(oldState == READY && (newState == DRILLING || newState == MILLING)){
+    //     spindleMotorStart();
+    //     MoveTo(&motorZ, mm2steps(milling_queue[millingMachine.currentShapeIdx].t) , millingMachine.speedForSteppers);
+    //     stateTransitionFlag[0]  = stateTransitionFlag[1];
+    //     return;
+    // }
 
     //* am Ende immer old state = new state
     stateTransitionFlag[0]  = stateTransitionFlag[1];

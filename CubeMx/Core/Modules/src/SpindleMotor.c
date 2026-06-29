@@ -52,6 +52,7 @@ void spindleMotorStart(void){
         // Pin für Richtung setzen
         HAL_GPIO_WritePin(GPIOE, GPIO_PIN_4, spindleMotor.direction); // Setze Richtungspin entsprechend der Drehrichtung
         __HAL_TIM_SET_COMPARE(&htim9, TIM_CHANNEL_1, spindleMotor.dutyCycleForTim);
+        TIM9->EGR |= TIM_EGR_UG;
         HAL_TIM_PWM_Start(&htim9, TIM_CHANNEL_1);
         spindleMotor.state = STARTING;
         while(spindleMotor.state == STARTING){}     // Solange in Funktion bleiben, bis Motor hochgefahren ist

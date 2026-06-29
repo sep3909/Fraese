@@ -9,8 +9,8 @@
 #include "spindleMotor.h"
 #include "stm32f4xx_hal_tim.h"
 
-#define OFFSET_Z 250
-#define SPEED_Z 10
+// #define OFFSET_Z 250
+// #define SPEED_Z 10
 
 void MoveTo(StepperMotor* motor, long target, uint32_t speed) {
     Stepper_SetTarget(motor, target, speed);
@@ -24,13 +24,17 @@ void MoveTo(StepperMotor* motor, long target, uint32_t speed) {
             // (millingMachine.state != READY)       &&
             // (millingMachine.state != TRANSFER)    &&
             (millingMachine.state != INITIAL)){
-                if(((stateTransitionFlag[0] == MILLING)||(stateTransitionFlag[0] == DRILLING)) && (stateTransitionFlag[1] == READY)){
+                if(((stateTransitionFlag[0] == MILLING)||(stateTransitionFlag[0] == DRILLING)) && (stateTransitionFlag[1] == PAUSED)){
                     stateTransitionFlag[0] = stateTransitionFlag[1];
-                    MoveTo(&motorZ, -OFFSET_Z, millingMachine.speedForSteppers);
+                    //aus werkstück herausfahren
+                    MoveTo(&motorZ, motorZ.current_pos - OFFSET_Z, millingMachine.speedForSteppers);
+                    spindleMotorStop();
                 }
-                else if((stateTransitionFlag[0] == READY && ((stateTransitionFlag[1] == MILLING) || (stateTransitionFlag[1] == DRILLING)))){
+                else if((stateTransitionFlag[0] == PAUSED && ((stateTransitionFlag[1] == MILLING) || (stateTransitionFlag[1] == DRILLING)))){
                     stateTransitionFlag[0] = stateTransitionFlag[1];
-                    MoveTo(&motorZ, mm2steps( milling_queue[millingMachine.currentShapeIdx].t), millingMachine.speedForSteppers);
+                    spindleMotorStart();
+                    // in Werkstück eintauchen
+                    MoveTo(&motorZ, motorZ.current_pos + OFFSET_Z, millingMachine.speedForSteppers);
                 }
                 // nach overheat muss spindlemotor hier wieder gestartet werdens
                 // if(startSpindleMotorAfterOverheatFlag){

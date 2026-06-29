@@ -189,10 +189,10 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
             // nur wenn gerade gefräst wird, werden Daten gesendet
             send_position(xpos_send, ypos_send, zpos_send, temp-273.15f);
         }
-        else if(millingMachine.state == OVERHEATED){
-          // wenn faul pin ==0 -> overheated 999
-          send_position(xpos_send, ypos_send, zpos_send, 999.0f);
-        }
+        // else if(millingMachine.state == OVERHEATED){
+        //   // wenn faul pin ==0 -> overheated 999
+        //   send_position(xpos_send, ypos_send, zpos_send, 999.0f);
+        // }
 
    
 
@@ -215,10 +215,11 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
           millingMachine.state != FAIL_SAFE && 
           millingMachine.state != TRANSFER  &&
           millingMachine.state != INITIAL   &&
-          millingMachine.state != OVERHEATED){
+          millingMachine.state != PAUSED){
         Stepper_Update();
       }
-      if(millingMachine.state == READY){
+      // in PAUSED kann die z Achse geupdated werden, um den Spindelmotor aus dem Werkstück freizufahren
+      if(millingMachine.state == PAUSED){
         Stepper_UpdateZ();
       }
       

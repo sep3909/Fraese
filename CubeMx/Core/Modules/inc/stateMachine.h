@@ -15,7 +15,8 @@ typedef enum {
     MILLING,                // während der fräsens
     DRILLING,               // während des bohrens
     FAIL_SAFE,              // Betätigung des Endanschlages während MILLING/DRILLING
-    OVERHEATED,             // overheated
+    // OVERHEATED,          // overheated
+    PAUSED,                  //pause
     FINISHED
 } millingMachineStates_Enum;
 
