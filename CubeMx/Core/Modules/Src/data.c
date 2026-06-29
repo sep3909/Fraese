@@ -193,7 +193,8 @@ void read_data(uint8_t* buf, uint32_t len){
                             millingMachine.state = READY;
                             send_ack();
                         }
-                        send_next();
+                        else{
+                        send_next();}
                        }
                        else {
                         send_nack();
@@ -229,9 +230,15 @@ void read_data(uint8_t* buf, uint32_t len){
                 else if (millingMachine.state == READY){             //§ Ready Modus
                     if (strcmp(temp_buffer, "e6") == 0){ 
                         if(Modus == 'b'){
+                            // übergang für pause -> weiter
+                            stateTransitionFlag[0] = millingMachine.state;
+                            stateTransitionFlag[1] = DRILLING;
                             millingMachine.state = DRILLING;
                         }
                         else if (Modus == 'f'){
+                            // übergang pause -> drillinng
+                            stateTransitionFlag[0] = millingMachine.state;
+                            stateTransitionFlag[1] = MILLING;
                             millingMachine.state = MILLING;
                         }
                         send_ack();
@@ -242,6 +249,8 @@ void read_data(uint8_t* buf, uint32_t len){
                 }
                 else if (millingMachine.state == MILLING || millingMachine.state == DRILLING){            //§ Milling Modus
                     if (strcmp(temp_buffer, "e4") == 0){
+                        stateTransitionFlag[0] = millingMachine.state;
+                        stateTransitionFlag[1] = READY;
                         millingMachine.state = READY;
                         send_ack();
                     }

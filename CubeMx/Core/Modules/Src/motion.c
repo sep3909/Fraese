@@ -7,6 +7,7 @@
 #include "globals.h"
 #include <math.h>
 #include "spindleMotor.h"
+#include "stm32f4xx_hal_tim.h"
 
 #define OFFSET_Z 250
 #define SPEED_Z 10
@@ -18,17 +19,25 @@ void MoveTo(StepperMotor* motor, long target, uint32_t speed) {
     // der TIM2-Interrupt Stepper_Update() nicht mehr aufruft -> is_moving bleibt 1.
     // blockiert bis Ziel erreicht
     // bei OVERHEAT bleibt man in der Schleife, dass nach Abkühlen weitergefräst werden kann
-    while ( motor->is_moving && 
-            millingMachine.state != FAIL_SAFE   &&
-            millingMachine.state != READY       &&
-            millingMachine.state != TRANSFER    &&
-            millingMachine.state != INITIAL){
-                // nach overheat muss spindlemotor hier wieder gestartet werdens
-                if(startSpindleMotorAfterOverheatFlag){
-                    spindleMotorStart();
-                    startSpindleMotorAfterOverheatFlag = false;
+    while ( (motor->is_moving) && 
+            (millingMachine.state != FAIL_SAFE)   &&
+            // (millingMachine.state != READY)       &&
+            // (millingMachine.state != TRANSFER)    &&
+            (millingMachine.state != INITIAL)){
+                if(((stateTransitionFlag[0] == MILLING)||(stateTransitionFlag[0] == DRILLING)) && (stateTransitionFlag[1] == READY)){
+                    stateTransitionFlag[0] = stateTransitionFlag[1];
+                    MoveTo(&motorZ, -OFFSET_Z, millingMachine.speedForSteppers);
                 }
-            };
+                else if((stateTransitionFlag[0] == READY && ((stateTransitionFlag[1] == MILLING) || (stateTransitionFlag[1] == DRILLING)))){
+                    stateTransitionFlag[0] = stateTransitionFlag[1];
+                    MoveTo(&motorZ, mm2steps( milling_queue[millingMachine.currentShapeIdx].t), millingMachine.speedForSteppers);
+                }
+                // nach overheat muss spindlemotor hier wieder gestartet werdens
+                // if(startSpindleMotorAfterOverheatFlag){
+                //     spindleMotorStart();
+                //     startSpindleMotorAfterOverheatFlag = false;
+                // }
+            }
 }
 
 

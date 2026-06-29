@@ -187,7 +187,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
             ypos_send = -steps2mm(motorY.current_pos);
             zpos_send = steps2mm(motorZ.current_pos);
             // nur wenn gerade gefräst wird, werden Daten gesendet
-            send_position(xpos_send, ypos_send, zpos_send, temp);
+            send_position(xpos_send, ypos_send, zpos_send, temp-273.15f);
         }
         else if(millingMachine.state == OVERHEATED){
           // wenn faul pin ==0 -> overheated 999
@@ -217,6 +217,9 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
           millingMachine.state != INITIAL   &&
           millingMachine.state != OVERHEATED){
         Stepper_Update();
+      }
+      if(millingMachine.state == READY){
+        Stepper_UpdateZ();
       }
       
     }

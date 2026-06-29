@@ -138,6 +138,46 @@ void Stepper_Update(void) {
     }
 }
 
+void Stepper_UpdateZ(void) {
+    // Array mit allen Motoren, um sie in einer Schleife abzuarbeiten
+    StepperMotor* motors[] = {&motorX, &motorY, &motorZ};
+
+            StepperMotor* m = motors[2];
+
+            // Nur wenn der Motor ein Ziel hat, machen wir was
+            if (m->is_moving) {
+                m->timer_count++;
+
+                // Ist es Zeit für den nächsten Schritt?
+                if (m->timer_count >= m->step_delay) {
+                    m->timer_count = 0;
+
+                    /* * Schritt-Impuls erzeugen:
+                    Der Treiber braucht eine steigende Flanke */
+
+                    HAL_GPIO_WritePin(m->step_port, m->step_pin, GPIO_PIN_SET);
+                    
+                    // kleiner delay (No Operation)  1 __NOP = 1 Taktzyklus
+                    for (volatile int i = 0; i < 100; i++) __NOP(); 
+                    
+                    HAL_GPIO_WritePin(m->step_port, m->step_pin, GPIO_PIN_RESET);
+
+                    // Interne Position mitzählen
+                    if (m->target_pos > m->current_pos) {
+                        m->current_pos++;
+                    } else {
+                        m->current_pos--;
+                    }
+
+                    // Prüfen, ob wir das Ziel erreicht haben
+                    if (m->current_pos == m->target_pos) {
+                        m->is_moving = 0;
+                    }
+                }
+            }
+        
+    }
+
 /**
   * Stoppt alle Motoren sofort (setzt moving-Flags zurück)
   */

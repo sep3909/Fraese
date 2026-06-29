@@ -2,6 +2,7 @@
 #define STEPPER_H
 
 #include "main.h" // Enthält die HAL-Bibliothek und Pin-Defines aus CubeMX
+#include "stepper.h"
 #include <stdint.h>
 #include <sys/_intsup.h>
 
@@ -32,5 +33,6 @@ void Stepper_SetTarget(StepperMotor* motor, long new_target, uint32_t speed);
 void Stepper_Update(void); // Diese Funktion wird im Timer-Interrupt aufgerufen
 void Stepper_StopAll(void);
 void Stepper_Enable(int enable);
+void Stepper_UpdateZ();
 
 #endif

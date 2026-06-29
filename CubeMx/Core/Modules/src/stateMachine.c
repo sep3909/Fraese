@@ -25,15 +25,8 @@ void millingMachineInit(void){
 
 void updateStateMachine(void){
 
-    // Überprüfen ob state Übergang nötig, ggf. Aktion
     // Flag ist default auf INITAL, da von INITAL nur Übergang auf SETX stattfindet, dort keine Aktion nötig
-    if(stateTransitionFlag[0] == stateTransitionFlag[1]){
-        // no Action -> Flag has default value
-    }
-    else{
-        stateTransition(stateTransitionFlag[0], stateTransitionFlag[1]);
-        stateTransitionFlag[1] = stateTransitionFlag[0];
-    }
+    stateTransition(stateTransitionFlag[0], stateTransitionFlag[1]);
     
     // Prüfen des states, entsprechende Aktion ausführen
      switch(millingMachine.state){
@@ -246,12 +239,19 @@ long mm2steps(float mm){
 }
 
 void stateTransition(millingMachineStates_Enum oldState, millingMachineStates_Enum newState){
+
+    if(newState == oldState){
+        return;
+    }
+
     //*Aktion für sauberen Übergang bei Event e3 (stop von GUI)
     //* MILLING -> INITIAL
     //* DRILLING -> INITIAL
     if((oldState == MILLING || oldState == DRILLING) && newState == INITIAL){
         spindleMotorStop();
         //todo auf 0,0,0 zurückfahren??
+        stateTransitionFlag[0]  = stateTransitionFlag[1];
+        return;
     }
 
     //* Aktion für Übergang von CONFIG -> TRANSFER
@@ -259,6 +259,24 @@ void stateTransition(millingMachineStates_Enum oldState, millingMachineStates_En
     if(oldState == CONFIG && newState == TRANSFER){
         MoveTo(&motorZ, -OFFSET_Z, stepperConfigSpeed);
         // spindleMotorStop();
+        stateTransitionFlag[0]  = stateTransitionFlag[1];
+        return;
+    }
+
+    //* Aktion für Pause -> z achse hochfahren und Spindelmotor stoppen
+    if((oldState == MILLING || oldState == DRILLING) && newState ==READY){
+        MoveTo(&motorZ, -OFFSET_Z, millingMachine.speedForSteppers);
+        spindleMotorStop();
+        stateTransitionFlag[0]  = stateTransitionFlag[1];
+        return;
+    }
+
+    //* Aktion für pause -> drilling/milling: spindelMotor starten, ins werkstück einfahren
+    if(oldState == READY && (newState == DRILLING || newState == MILLING)){
+        spindleMotorStart();
+        MoveTo(&motorZ, mm2steps(milling_queue[millingMachine.currentShapeIdx].t) , millingMachine.speedForSteppers);
+        stateTransitionFlag[0]  = stateTransitionFlag[1];
+        return;
     }
 
     //* am Ende immer old state = new state
