@@ -19,6 +19,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "adc.h"
+#include "data.h"
 #include "dma.h"
 #include "i2c.h"
 #include "i2s.h"
@@ -114,6 +115,7 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+  send_ack();
   while (1)
   {
     updateStateMachine();

@@ -1,5 +1,7 @@
 #include "../../Inc/main.h"
 #include "stateMachine.h"
+#include "stm32f4xx_hal.h"
+#include "stm32f4xx_hal_cortex.h"
 #include "stm32f4xx_hal_tim.h"
 #include "usb_device.h"
 #include "usbd_cdc_if.h"
@@ -87,11 +89,17 @@ void read_data(uint8_t* buf, uint32_t len){
                 if (strcmp(temp_buffer, "e3") == 0){
                     send_ack();
                     // setzen des flags für state übergang
-                    Stepper_StopAll();
-                    stateTransitionFlag[0] = millingMachine.state;
-                    stateTransitionFlag[1] = INITIAL;
-                    millingMachine.state = INITIAL;
-                    shape_index = 0;
+                    if((millingMachine.state == MILLING) || (millingMachine.state == DRILLING)){
+                        HAL_Delay(500);
+                        HAL_NVIC_SystemReset();
+                    }
+                    else{
+                        Stepper_StopAll();
+                        stateTransitionFlag[0] = millingMachine.state;
+                        stateTransitionFlag[1] = INITIAL;
+                        millingMachine.state = INITIAL;
+                        shape_index = 0;
+                    }
                 }
 
                 else if (millingMachine.state == INITIAL){      //§ INITIAL Modus

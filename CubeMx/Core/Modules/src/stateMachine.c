@@ -255,7 +255,7 @@ void stateTransition(millingMachineStates_Enum oldState, millingMachineStates_En
     //* DRILLING -> INITIAL
     if((oldState == MILLING || oldState == DRILLING) && newState == INITIAL){
         stateTransitionFlag[0]  = stateTransitionFlag[1];
-        MoveTo(&motorZ, -OFFSET_Z, millingMachine.speedForSteppers);
+        // MoveTo(&motorZ, -OFFSET_Z, millingMachine.speedForSteppers);
         spindleMotorStop();
         //todo auf 0,0,0 zurückfahren??
         return;
